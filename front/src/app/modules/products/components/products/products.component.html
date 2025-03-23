@@ -1,0 +1,89 @@
+<div class="products-container">
+  <!-- En-tête avec recherche -->
+  <div class="products-header">
+    <h1>Découvrez nos produits anti-gaspillage</h1>
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        placeholder="Rechercher un produit..."
+        class="search-input"
+      >
+    </div>
+  </div>
+
+  <!-- Catégories -->
+  <div class="categories-container">
+    <button 
+      *ngFor="let category of categories"
+      class="category-btn"
+      [class.active]="selectedCategory === category.id"
+      (click)="selectCategory(category.id)">
+      <i class="fas" [ngClass]="category.icon"></i>
+      <span>{{ category.name }}</span>
+    </button>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div *ngIf="error" class="error-message">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ error }}
+  </div>
+
+  <!-- Loader -->
+  <div *ngIf="loading" class="loader-container">
+    <div class="loader"></div>
+    <p>Chargement des produits...</p>
+  </div>
+
+  <!-- Grille de produits -->
+  <div *ngIf="!loading && !error" class="products-grid">
+    <div *ngFor="let product of filteredProducts" class="product-card" [class.low-stock]="product.quantity < 5">
+      <div class="product-image">
+        <img [src]="product.image || 'assets/images/default-product.jpg'" [alt]="product.name">
+        <div class="product-overlay">
+          <div class="quantity-selector">
+            <button 
+              class="quantity-btn"
+              (click)="updateQuantity(product.id!, -1)"
+              [disabled]="selectedQuantities[product.id!] <= 1">
+              <i class="fas fa-minus"></i>
+            </button>
+            <span class="quantity-value">{{ selectedQuantities[product.id!] }}</span>
+            <button 
+              class="quantity-btn"
+              (click)="updateQuantity(product.id!, 1)"
+              [disabled]="selectedQuantities[product.id!] >= product.quantity">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+          <button (click)="addToCart(product)" class="add-to-cart-btn">
+            <i class="fas fa-cart-plus"></i>
+            Ajouter au panier
+          </button>
+        </div>
+        <div class="product-badge" *ngIf="product.quantity < 5">
+          Plus que {{ product.quantity }} en stock !
+        </div>
+      </div>
+      <div class="product-info">
+        <h3>{{ product.name }}</h3>
+        <p class="description">{{ product.description }}</p>
+        <div class="product-footer">
+          <span class="price">{{ product.price | currency:'EUR' }}</span>
+          <span class="quantity">
+            <i class="fas fa-box"></i>
+            {{ product.quantity }} disponible(s)
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si aucun produit -->
+  <div *ngIf="!loading && !error && filteredProducts.length === 0" class="no-products">
+    <i class="fas fa-box-open"></i>
+    <p>Aucun produit ne correspond à votre recherche</p>
+  </div>
+</div> 

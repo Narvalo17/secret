@@ -1,0 +1,52 @@
+<div class="cart-container">
+  <h1>Votre Panier</h1>
+  
+  <div class="cart-content" *ngIf="cart.items.length > 0">
+    <div class="cart-items">
+      <div class="cart-item" *ngFor="let item of cart.items">
+        <div class="item-image">
+          <img [src]="item.product.image" [alt]="item.product.name">
+        </div>
+        <div class="item-details">
+          <h3>{{ item.product.name }}</h3>
+          <p class="description">{{ item.product.description }}</p>
+          <p class="price">{{ item.product.price | currency:'EUR' }}</p>
+        </div>
+        <div class="item-quantity">
+          <button (click)="updateQuantity(item.product.id!, item.quantity - 1)" [disabled]="item.quantity <= 1">
+            <i class="fas fa-minus"></i>
+          </button>
+          <span>{{ item.quantity }}</span>
+          <button (click)="updateQuantity(item.product.id!, item.quantity + 1)" [disabled]="item.quantity >= item.product.quantity">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="item-total">
+          {{ item.product.price * item.quantity | currency:'EUR' }}
+        </div>
+        <button class="remove-item" (click)="removeItem(item.product.id!)">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="cart-summary">
+      <div class="summary-row">
+        <span>Total</span>
+        <span class="total">{{ cart.total | currency:'EUR' }}</span>
+      </div>
+      <button class="clear-cart" (click)="clearCart()">
+        <i class="fas fa-trash"></i> Vider le panier
+      </button>
+      <button class="checkout">
+        <i class="fas fa-shopping-cart"></i> Commander
+      </button>
+    </div>
+  </div>
+
+  <div class="empty-cart" *ngIf="cart.items.length === 0">
+    <i class="fas fa-shopping-cart"></i>
+    <p>Votre panier est vide</p>
+    <button routerLink="/products">Continuer mes achats</button>
+  </div>
+</div> 

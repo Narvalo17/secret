@@ -1,0 +1,78 @@
+<div class="stores-container">
+  <div class="stores-header">
+    <h1>Nos Magasins Partenaires</h1>
+    <div class="search-filters">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Rechercher un magasin..."
+        >
+      </div>
+      <div class="category-filters">
+        <button 
+          [class.active]="selectedCategory === 'Tous'"
+          (click)="onCategoryChange('Tous')"
+        >
+          Tous
+        </button>
+        <button 
+          [class.active]="selectedCategory === 'Restaurants'"
+          (click)="onCategoryChange('Restaurants')"
+        >
+          <i class="fas fa-utensils"></i> Restaurants
+        </button>
+        <button 
+          [class.active]="selectedCategory === 'Supermarchés'"
+          (click)="onCategoryChange('Supermarchés')"
+        >
+          <i class="fas fa-shopping-cart"></i> Supermarchés
+        </button>
+        <button 
+          [class.active]="selectedCategory === 'Boulangeries'"
+          (click)="onCategoryChange('Boulangeries')"
+        >
+          <i class="fas fa-bread-slice"></i> Boulangeries
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stores-grid">
+    <div *ngFor="let store of filteredStores" class="store-card">
+      <div class="store-image">
+        <img [src]="store.imageUrl" [alt]="store.name">
+        <button class="favorite-btn" (click)="toggleFavorite(store)">
+          <i class="fas" [class.fa-heart]="store.isFavorite" [class.fa-heart-o]="!store.isFavorite"></i>
+        </button>
+      </div>
+      <div class="store-info">
+        <h3>{{ store.name }}</h3>
+        <p class="description">{{ store.description }}</p>
+        <div class="store-details">
+          <span class="address">
+            <i class="fas fa-map-marker-alt"></i> {{ store.address }}
+          </span>
+          <span class="rating" *ngIf="store.rating">
+            <i class="fas fa-star"></i> {{ store.rating }}
+          </span>
+        </div>
+        <div class="store-footer">
+          <span class="distance" *ngIf="store.distance">
+            <i class="fas fa-location-arrow"></i> {{ store.distance }} km
+          </span>
+          <a [routerLink]="['/stores', store.id]" class="view-store-btn">
+            Voir les produits
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="filteredStores.length === 0" class="no-results">
+    <i class="fas fa-store-slash"></i>
+    <p>Aucun magasin ne correspond à votre recherche</p>
+  </div>
+</div> 

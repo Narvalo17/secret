@@ -1,0 +1,54 @@
+<div class="favorites-container">
+  <div class="favorites-header">
+    <h1>Mes Magasins Favoris</h1>
+  </div>
+
+  <div class="stores-grid" *ngIf="!isLoading && !error">
+    <div *ngFor="let store of favoriteStores" class="store-card">
+      <div class="store-image">
+        <img [src]="store.imageUrl" [alt]="store.name">
+        <button class="favorite-btn" (click)="removeFromFavorites(store)">
+          <i class="fas fa-heart"></i>
+        </button>
+      </div>
+      <div class="store-info">
+        <h3>{{ store.name }}</h3>
+        <p class="description">{{ store.description }}</p>
+        <div class="store-details">
+          <span class="address">
+            <i class="fas fa-map-marker-alt"></i> {{ store.address }}
+          </span>
+          <span class="rating" *ngIf="store.rating">
+            <i class="fas fa-star"></i> {{ store.rating }}
+          </span>
+        </div>
+        <div class="store-footer">
+          <span class="distance" *ngIf="store.distance">
+            <i class="fas fa-location-arrow"></i> {{ store.distance }} km
+          </span>
+          <a [routerLink]="['/stores', store.id]" class="view-store-btn">
+            Voir les produits
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <p>Chargement des favoris...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <i class="fas fa-exclamation-circle"></i>
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!isLoading && !error && favoriteStores.length === 0" class="no-favorites">
+    <i class="fas fa-heart-broken"></i>
+    <p>Vous n'avez pas encore de magasins favoris</p>
+    <a routerLink="/stores" class="browse-stores-btn">
+      Découvrir les magasins
+    </a>
+  </div>
+</div> 

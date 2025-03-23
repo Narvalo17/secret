@@ -1,0 +1,93 @@
+<div class="store-detail-container" *ngIf="!isLoading && !error && store">
+  <div class="store-header">
+    <div class="store-banner" [style.backgroundImage]="'url(' + store.imageUrl + ')'">
+      <div class="store-info">
+        <h1>{{ store.name }}</h1>
+        <div class="store-meta">
+          <span class="rating" *ngIf="store.rating">
+            <i class="fas fa-star"></i> {{ store.rating }}
+          </span>
+          <span class="address">
+            <i class="fas fa-map-marker-alt"></i> {{ store.address }}
+          </span>
+          <button class="favorite-btn" (click)="toggleFavorite()">
+            <i class="fas" [class.fa-heart]="store.isFavorite" [class.fa-heart-o]="!store.isFavorite"></i>
+            {{ store.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="store-content">
+    <div class="store-description">
+      <h2>À propos du magasin</h2>
+      <p>{{ store.description }}</p>
+      
+      <div class="store-details">
+        <div class="detail-item">
+          <i class="fas fa-clock"></i>
+          <div class="detail-content">
+            <h3>Horaires d'ouverture</h3>
+            <p>{{ store.openingHours || 'Non spécifié' }}</p>
+          </div>
+        </div>
+        
+        <div class="detail-item">
+          <i class="fas fa-phone"></i>
+          <div class="detail-content">
+            <h3>Contact</h3>
+            <p>{{ store.phone || 'Non spécifié' }}</p>
+          </div>
+        </div>
+
+        <div class="detail-item">
+          <i class="fas fa-info-circle"></i>
+          <div class="detail-content">
+            <h3>Informations supplémentaires</h3>
+            <p>{{ store.additionalInfo || 'Aucune information supplémentaire' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="store-products">
+      <h2>Produits disponibles</h2>
+      
+      <div class="products-grid">
+        <div *ngFor="let product of products" class="product-card">
+          <div class="product-image">
+            <img [src]="product.imageUrl" [alt]="product.name">
+          </div>
+          <div class="product-info">
+            <h3>{{ product.name }}</h3>
+            <p class="description">{{ product.description }}</p>
+            <div class="product-footer">
+              <span class="price">{{ product.price | currency:'EUR' }}</span>
+              <button class="add-to-cart">
+                <i class="fas fa-cart-plus"></i>
+                Ajouter
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="products.length === 0" class="no-products">
+        <i class="fas fa-box-open"></i>
+        <p>Aucun produit disponible pour le moment</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="loading" *ngIf="isLoading">
+  <i class="fas fa-spinner fa-spin"></i>
+  <p>Chargement en cours...</p>
+</div>
+
+<div class="error-message" *ngIf="error">
+  <i class="fas fa-exclamation-circle"></i>
+  <p>{{ error }}</p>
+  <button routerLink="/stores">Retour aux magasins</button>
+</div> 
