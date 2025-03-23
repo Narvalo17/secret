@@ -7,6 +7,14 @@ const routes: Routes = [
     loadChildren: () => import('./modules/home/home.module').then(m => m.HomeModule)
   },
   {
+    path: 'auth',
+    loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+  },
+  {
+    path: 'stores',
+    loadChildren: () => import('./modules/stores/stores.module').then(m => m.StoresModule)
+  },
+  {
     path: 'products',
     loadChildren: () => import('./modules/products/products.module').then(m => m.ProductsModule)
   },
@@ -15,12 +23,8 @@ const routes: Routes = [
     loadChildren: () => import('./modules/cart/cart.module').then(m => m.CartModule)
   },
   {
-    path: 'stores',
-    loadChildren: () => import('./modules/stores/stores.module').then(m => m.StoresModule)
-  },
-  {
-    path: 'auth',
-    loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+    path: '**',
+    redirectTo: ''
   }
 ];
 

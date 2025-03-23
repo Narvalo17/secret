@@ -31,7 +31,7 @@ export class CartService {
 
   private calculateTotal(): void {
     this.cart.total = this.cart.items.reduce((total, item) => {
-      return total + (item.product.price * item.quantity);
+      return total + (item.product.currentPrice * item.quantity);
     }, 0);
   }
 

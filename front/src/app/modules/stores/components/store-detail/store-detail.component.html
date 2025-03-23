@@ -56,19 +56,26 @@
       
       <div class="products-grid">
         <div *ngFor="let product of products" class="product-card">
+          <div class="discount-badge" *ngIf="product.discountPercentage > 0">
+            -{{ product.discountPercentage }}%
+          </div>
           <div class="product-image">
             <img [src]="product.imageUrl" [alt]="product.name">
           </div>
           <div class="product-info">
             <h3>{{ product.name }}</h3>
             <p class="description">{{ product.description }}</p>
-            <div class="product-footer">
-              <span class="price">{{ product.price | currency:'EUR' }}</span>
-              <button class="add-to-cart">
-                <i class="fas fa-cart-plus"></i>
-                Ajouter
-              </button>
+            <div class="price-info">
+              <div class="prices">
+                <span class="original-price">{{ product.originalPrice | currency:'EUR' }}</span>
+                <span class="current-price">{{ product.currentPrice | currency:'EUR' }}</span>
+              </div>
+              <span class="quantity">Reste {{ product.quantity }} unité(s)</span>
             </div>
+            <button class="add-to-cart-btn" (click)="addToCart(product)" [disabled]="product.quantity === 0">
+              <i class="fas fa-shopping-cart"></i>
+              Ajouter au panier
+            </button>
           </div>
         </div>
       </div>

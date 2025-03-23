@@ -71,9 +71,16 @@ export class StoreService {
     return of({ success: true, data: this.stores });
   }
 
-  getStoreById(id: number): Observable<{ success: boolean; data: Store }> {
+  getStoreById(id: number): Observable<{ success: boolean; data: Store | null; message?: string }> {
     const store = this.stores.find(s => s.id === id);
-    return of({ success: true, data: store! });
+    if (!store) {
+      return of({ 
+        success: false, 
+        data: null, 
+        message: `Magasin avec l'ID ${id} non trouvé` 
+      });
+    }
+    return of({ success: true, data: store });
   }
 
   addToFavorites(storeId: number): Observable<{ success: boolean }> {

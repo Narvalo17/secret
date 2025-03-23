@@ -41,7 +41,10 @@
   <div *ngIf="!loading && !error" class="products-grid">
     <div *ngFor="let product of filteredProducts" class="product-card" [class.low-stock]="product.quantity < 5">
       <div class="product-image">
-        <img [src]="product.image || 'assets/images/default-product.jpg'" [alt]="product.name">
+        <img [src]="product.imageUrl || 'assets/images/default-product.jpg'" [alt]="product.name">
+        <div class="discount-badge" *ngIf="product.discountPercentage > 0">
+          -{{ product.discountPercentage }}%
+        </div>
         <div class="product-overlay">
           <div class="quantity-selector">
             <button 
@@ -71,7 +74,10 @@
         <h3>{{ product.name }}</h3>
         <p class="description">{{ product.description }}</p>
         <div class="product-footer">
-          <span class="price">{{ product.price | currency:'EUR' }}</span>
+          <div class="price-info">
+            <span class="original-price">{{ product.originalPrice | currency:'EUR' }}</span>
+            <span class="current-price">{{ product.currentPrice | currency:'EUR' }}</span>
+          </div>
           <span class="quantity">
             <i class="fas fa-box"></i>
             {{ product.quantity }} disponible(s)

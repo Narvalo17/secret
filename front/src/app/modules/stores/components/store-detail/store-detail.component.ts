@@ -4,6 +4,8 @@ import { Store } from '@core/models/store.model';
 import { Product } from '@core/models/product.model';
 import { StoreService } from '@core/services/store.service';
 import { ProductService } from '@core/services/product.service';
+import { CartService } from '@core/services/cart.service';
+import { NotificationService } from '@core/services/notification.service';
 
 @Component({
   selector: 'app-store-detail',
@@ -19,7 +21,9 @@ export class StoreDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private storeService: StoreService,
-    private productService: ProductService
+    private productService: ProductService,
+    private cartService: CartService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -35,9 +39,12 @@ export class StoreDetailComponent implements OnInit {
     
     this.storeService.getStoreById(storeId).subscribe({
       next: (response) => {
-        if (response.data && !Array.isArray(response.data)) {
+        if (response.success && response.data) {
           this.store = response.data;
           this.loadStoreProducts(storeId);
+        } else {
+          this.error = response.message || 'Magasin non trouvé';
+          this.isLoading = false;
         }
       },
       error: (error) => {
@@ -85,6 +92,19 @@ export class StoreDetailComponent implements OnInit {
           this.error = 'Erreur lors de l\'ajout aux favoris';
         }
       });
+    }
+  }
+
+  addToCart(product: Product): void {
+    try {
+      this.cartService.addToCart(product, 1);
+      this.notificationService.success('Produit ajouté au panier');
+    } catch (error) {
+      if (error instanceof Error) {
+        this.notificationService.error(error.message);
+      } else {
+        this.notificationService.error('Erreur lors de l\'ajout au panier');
+      }
     }
   }
 } 

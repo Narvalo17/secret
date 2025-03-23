@@ -10,6 +10,7 @@
   right: 0;
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: white;
 
   .navbar-brand {
     display: flex;
@@ -21,6 +22,7 @@
       gap: 0.5rem;
       text-decoration: none;
       color: white;
+      font-size: 1.5rem;
 
       i {
         font-size: 1.5rem;
@@ -34,116 +36,130 @@
     }
 
     .subtitle {
-      font-size: 0.8rem;
+      font-size: 0.9rem;
       color: #aaa;
     }
   }
 
   .navbar-menu {
     display: flex;
-    align-items: center;
     gap: 2rem;
+    align-items: center;
 
     .nav-link {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      color: #aaa;
+      color: white;
       text-decoration: none;
-      transition: color 0.3s ease;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
       font-weight: 500;
 
       i {
         font-size: 1.2rem;
       }
 
-      &:hover, &.active {
-        color: white;
+      &:hover {
+        background: rgba(255, 255, 255, 0.1);
       }
-    }
 
-    .cart-link {
-      position: relative;
+      &.active {
+        border-color: #e44d26;
+        background: rgba(228, 77, 38, 0.1);
+      }
 
-      .cart-icon {
+      &.cart-link {
         position: relative;
-      }
 
-      .cart-count {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #4CAF50;
-        color: white;
-        font-size: 0.7rem;
-        font-weight: 600;
-        padding: 2px 6px;
-        border-radius: 10px;
-        min-width: 18px;
-        text-align: center;
+        .cart-icon {
+          position: relative;
+        }
+
+        .cart-count {
+          position: absolute;
+          top: -8px;
+          right: -8px;
+          background: #4CAF50;
+          color: white;
+          border-radius: 50%;
+          width: 18px;
+          height: 18px;
+          font-size: 0.8rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
       }
     }
   }
 
-  .user-menu {
-    position: relative;
+  .navbar-icons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 
-    .user-btn {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: none;
-      border: none;
-      color: #aaa;
-      cursor: pointer;
-      padding: 0.5rem 1rem;
-      font-size: 1rem;
-      transition: color 0.3s ease;
+    .user-menu {
+      position: relative;
 
-      &:hover {
+      .user-btn {
+        background: none;
+        border: none;
         color: white;
-      }
-
-      i {
-        font-size: 1.2rem;
-      }
-    }
-
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      min-width: 200px;
-      margin-top: 0.5rem;
-      overflow: hidden;
-
-      a {
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.8rem 1rem;
-        color: #666;
-        text-decoration: none;
-        transition: all 0.2s ease;
-
-        i {
-          font-size: 1.1rem;
-          width: 20px;
-        }
+        cursor: pointer;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background 0.3s ease;
 
         &:hover {
-          background: #f5f5f5;
-          color: #4CAF50;
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        i {
+          font-size: 1.2rem;
         }
       }
 
-      .dropdown-divider {
-        height: 1px;
-        background: #eee;
-        margin: 0.5rem 0;
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        min-width: 200px;
+        margin-top: 0.5rem;
+        z-index: 1000;
+
+        a {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.8rem 1rem;
+          color: #333;
+          text-decoration: none;
+          transition: background 0.2s;
+
+          i {
+            color: #666;
+            width: 20px;
+          }
+
+          &:hover {
+            background: #f5f5f5;
+          }
+        }
+
+        .dropdown-divider {
+          height: 1px;
+          background: #eee;
+          margin: 0.5rem 0;
+        }
       }
     }
   }
@@ -159,9 +175,9 @@
       display: block;
       width: 25px;
       height: 2px;
-      background-color: white;
+      background: white;
       margin: 5px 0;
-      transition: 0.3s;
+      transition: all 0.3s ease;
     }
   }
 }
@@ -194,13 +210,18 @@
       top: 100%;
       left: 0;
       right: 0;
-      background: #333333;
+      background: #333;
       flex-direction: column;
       padding: 1rem;
       gap: 1rem;
 
       &.is-active {
         display: flex;
+      }
+
+      .nav-link {
+        width: 100%;
+        justify-content: center;
       }
     }
 
