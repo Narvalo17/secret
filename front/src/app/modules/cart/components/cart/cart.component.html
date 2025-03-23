@@ -7,46 +7,54 @@
         <div class="item-image">
           <img [src]="item.product.image" [alt]="item.product.name">
         </div>
-        <div class="item-details">
+        <div class="item-info">
           <h3>{{ item.product.name }}</h3>
           <p class="description">{{ item.product.description }}</p>
-          <p class="price">{{ item.product.price | currency:'EUR' }}</p>
+          <p class="item-price">{{ item.product.price | currency:'EUR' }}</p>
         </div>
-        <div class="item-quantity">
-          <button (click)="updateQuantity(item.product.id!, item.quantity - 1)" [disabled]="item.quantity <= 1">
-            <i class="fas fa-minus"></i>
+        <div class="item-actions">
+          <div class="quantity-controls">
+            <button (click)="updateQuantity(item.product.id!, item.quantity - 1)" [disabled]="item.quantity <= 1">
+              <i class="fas fa-minus"></i>
+            </button>
+            <span>{{ item.quantity }}</span>
+            <button (click)="updateQuantity(item.product.id!, item.quantity + 1)" [disabled]="item.quantity >= item.product.quantity">
+              <i class="fas fa-plus"></i>
+            </button>
+          </div>
+          <button class="remove-btn" (click)="removeItem(item.product.id!)">
+            <i class="fas fa-trash"></i> Supprimer
           </button>
-          <span>{{ item.quantity }}</span>
-          <button (click)="updateQuantity(item.product.id!, item.quantity + 1)" [disabled]="item.quantity >= item.product.quantity">
-            <i class="fas fa-plus"></i>
-          </button>
         </div>
-        <div class="item-total">
-          {{ item.product.price * item.quantity | currency:'EUR' }}
-        </div>
-        <button class="remove-item" (click)="removeItem(item.product.id!)">
-          <i class="fas fa-trash"></i>
-        </button>
       </div>
     </div>
     
     <div class="cart-summary">
-      <div class="summary-row">
-        <span>Total</span>
-        <span class="total">{{ cart.total | currency:'EUR' }}</span>
+      <h2>Récapitulatif</h2>
+      <div class="summary-item">
+        <span>Sous-total</span>
+        <span>{{ cart.total | currency:'EUR' }}</span>
       </div>
-      <button class="clear-cart" (click)="clearCart()">
-        <i class="fas fa-trash"></i> Vider le panier
-      </button>
-      <button class="checkout">
+      <div class="summary-item">
+        <span>Livraison</span>
+        <span>Gratuit</span>
+      </div>
+      <div class="summary-item total">
+        <span>Total</span>
+        <span>{{ cart.total | currency:'EUR' }}</span>
+      </div>
+      <button class="checkout-btn" (click)="checkout()">
         <i class="fas fa-shopping-cart"></i> Commander
       </button>
     </div>
   </div>
 
   <div class="empty-cart" *ngIf="cart.items.length === 0">
-    <i class="fas fa-shopping-cart"></i>
-    <p>Votre panier est vide</p>
-    <button routerLink="/products">Continuer mes achats</button>
+    <i class="fas fa-shopping-basket"></i>
+    <p>Votre panier est vide pour le moment</p>
+    <button routerLink="/products">
+      <i class="fas fa-arrow-right"></i>
+      Découvrir nos produits
+    </button>
   </div>
 </div> 

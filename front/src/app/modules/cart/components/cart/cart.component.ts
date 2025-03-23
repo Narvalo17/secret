@@ -36,4 +36,9 @@ export class CartComponent implements OnInit {
   clearCart(): void {
     this.cartService.clearCart();
   }
+
+  checkout() {
+    // TODO: Implémenter la logique de paiement
+    console.log('Proceeding to checkout...');
+  }
 } 
