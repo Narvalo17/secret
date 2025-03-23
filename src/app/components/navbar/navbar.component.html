@@ -1,0 +1,39 @@
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a routerLink="/">YELHA</a>
+    <span class="subtitle">Anti-gaspillage alimentaire</span>
+  </div>
+  
+  <div class="navbar-menu" [class.is-active]="isMenuOpen">
+    <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Accueil</a>
+    <a routerLink="/products" routerLinkActive="active">Produits</a>
+  </div>
+
+  <div class="navbar-icons">
+    <div class="cart-icon">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+    </div>
+    
+    <div class="user-menu" (click)="toggleUserMenu()" [class.is-active]="isUserMenuOpen">
+      <i class="fas fa-user"></i>
+      <div class="user-dropdown" *ngIf="isUserMenuOpen">
+        <ng-container *ngIf="!isAuthenticated">
+          <a routerLink="/auth/login">Connexion</a>
+          <a routerLink="/auth/register">Inscription</a>
+        </ng-container>
+        <ng-container *ngIf="isAuthenticated">
+          <a routerLink="/profile">Mon Profil</a>
+          <a routerLink="/orders">Mes Commandes</a>
+          <a href="#" (click)="logout(); $event.preventDefault()">Déconnexion</a>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <button class="menu-toggle" (click)="isMenuOpen = !isMenuOpen">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+</nav> 
