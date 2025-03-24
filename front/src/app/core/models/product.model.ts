@@ -1,21 +1,36 @@
 export interface Product {
-  id?: number;
+  id: number;
   name: string;
-  description: string;
+  description?: string;
   originalPrice: number;
   discountPercentage: number;
   currentPrice: number;
   quantity: number;
-  imageUrl?: string;
-  image?: string;
+  price: number;
+  stock: number;
+  imageUrl: string;
   storeId: number;
+  category: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface ProductFilter {
   category?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  minPrice?: number;
+  maxPrice?: number;
+  inStock?: boolean;
+  storeId?: number;
+  searchTerm?: string;
+}
+
+export interface ProductSortOptions {
+  field: keyof Product;
+  direction: 'asc' | 'desc';
 }
 
 export interface ProductResponse {
   success: boolean;
   message: string;
-  data?: Product | Product[];
+  data: Product | Product[] | undefined;
 } 

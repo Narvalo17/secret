@@ -1,0 +1,65 @@
+<div class="shopping-cart">
+  <div class="header">
+    <h2>Mon Panier</h2>
+    <button class="btn btn-danger" 
+            [disabled]="cartItems.length === 0 || loading"
+            (click)="clearCart()">
+      <i class="fas fa-trash"></i> Vider le panier
+    </button>
+  </div>
+
+  <div class="cart-content">
+    <div *ngIf="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i> Chargement...
+    </div>
+
+    <div *ngIf="!loading && cartItems.length === 0" class="empty-cart">
+      <i class="fas fa-shopping-cart"></i>
+      <p>Votre panier est vide</p>
+    </div>
+
+    <div *ngIf="!loading && cartItems.length > 0" class="cart-items">
+      <div class="cart-item" *ngFor="let item of cartItems">
+        <div class="item-image">
+          <img [src]="item.imageUrl" [alt]="item.name">
+        </div>
+        <div class="item-details">
+          <h3>{{ item.name }}</h3>
+          <p class="description">{{ item.description }}</p>
+          <p class="price">{{ item.price | currency:'EUR' }}</p>
+        </div>
+        <div class="item-quantity">
+          <button class="btn btn-sm" 
+                  (click)="updateQuantity(item.id, item.quantity - 1)"
+                  [disabled]="item.quantity <= 1 || loading">
+            <i class="fas fa-minus"></i>
+          </button>
+          <span>{{ item.quantity }}</span>
+          <button class="btn btn-sm" 
+                  (click)="updateQuantity(item.id, item.quantity + 1)"
+                  [disabled]="loading">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+        <div class="item-total">
+          {{ item.price * item.quantity | currency:'EUR' }}
+        </div>
+        <button class="btn btn-danger btn-sm" 
+                (click)="removeItem(item.id)"
+                [disabled]="loading">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+
+      <div class="cart-summary">
+        <div class="total">
+          <span>Total :</span>
+          <span class="amount">{{ total | currency:'EUR' }}</span>
+        </div>
+        <button class="btn btn-primary btn-lg">
+          Passer la commande
+        </button>
+      </div>
+    </div>
+  </div>
+</div> 

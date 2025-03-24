@@ -1,0 +1,86 @@
+<div class="profile-container">
+  <div class="loading" *ngIf="loading">
+    <i class="fas fa-spinner fa-spin"></i> Chargement...
+  </div>
+
+  <div class="profile-content" *ngIf="!loading">
+    <div class="profile-section">
+      <h2>Informations du profil</h2>
+      <form [formGroup]="profileForm" (ngSubmit)="onUpdateProfile()">
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" formControlName="email" class="form-control">
+          <div class="error-message" *ngIf="profileForm.get('email')?.errors?.['required'] && profileForm.get('email')?.touched">
+            L'email est requis
+          </div>
+          <div class="error-message" *ngIf="profileForm.get('email')?.errors?.['email'] && profileForm.get('email')?.touched">
+            Format d'email invalide
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="firstName">Prénom</label>
+          <input type="text" id="firstName" formControlName="firstName" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Nom</label>
+          <input type="text" id="lastName" formControlName="lastName" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <input type="tel" id="phone" formControlName="phone" class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="address">Adresse</label>
+          <textarea id="address" formControlName="address" class="form-control" rows="3"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="!profileForm.valid || loading">
+          Mettre à jour le profil
+        </button>
+      </form>
+    </div>
+
+    <div class="profile-section">
+      <h2>Changer le mot de passe</h2>
+      <form [formGroup]="passwordForm" (ngSubmit)="onUpdatePassword()">
+        <div class="form-group">
+          <label for="currentPassword">Mot de passe actuel *</label>
+          <input type="password" id="currentPassword" formControlName="currentPassword" class="form-control">
+          <div class="error-message" *ngIf="passwordForm.get('currentPassword')?.errors?.['required'] && passwordForm.get('currentPassword')?.touched">
+            Le mot de passe actuel est requis
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="newPassword">Nouveau mot de passe *</label>
+          <input type="password" id="newPassword" formControlName="newPassword" class="form-control">
+          <div class="error-message" *ngIf="passwordForm.get('newPassword')?.errors?.['required'] && passwordForm.get('newPassword')?.touched">
+            Le nouveau mot de passe est requis
+          </div>
+          <div class="error-message" *ngIf="passwordForm.get('newPassword')?.errors?.['minlength'] && passwordForm.get('newPassword')?.touched">
+            Le mot de passe doit contenir au moins 8 caractères
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="confirmPassword">Confirmer le nouveau mot de passe *</label>
+          <input type="password" id="confirmPassword" formControlName="confirmPassword" class="form-control">
+          <div class="error-message" *ngIf="passwordForm.get('confirmPassword')?.errors?.['required'] && passwordForm.get('confirmPassword')?.touched">
+            La confirmation du mot de passe est requise
+          </div>
+          <div class="error-message" *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched">
+            Les mots de passe ne correspondent pas
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="!passwordForm.valid || loading">
+          Changer le mot de passe
+        </button>
+      </form>
+    </div>
+  </div>
+</div> 

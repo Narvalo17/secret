@@ -1,0 +1,162 @@
+.admin-dashboard {
+  padding: 2rem;
+
+  .dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h1 {
+      margin: 0;
+      color: #333;
+      font-size: 2rem;
+    }
+
+    .refresh-btn {
+      padding: 0.75rem 1.5rem;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+
+      &:hover {
+        background-color: #f8f9fa;
+        border-color: #c1c1c1;
+      }
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+
+    .stat-card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #e3f2fd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 1.5rem;
+          color: #1976d2;
+        }
+      }
+
+      .stat-content {
+        flex: 1;
+
+        h3 {
+          margin: 0 0 0.5rem;
+          color: #666;
+          font-size: 0.875rem;
+          font-weight: 500;
+        }
+
+        .stat-value {
+          margin: 0;
+          color: #333;
+          font-size: 1.5rem;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .dashboard-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+
+    .recent-section {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+      h2 {
+        margin: 0 0 1.5rem;
+        color: #333;
+        font-size: 1.25rem;
+      }
+
+      .loading-spinner {
+        text-align: center;
+        padding: 2rem;
+        color: #666;
+
+        i {
+          font-size: 2rem;
+        }
+      }
+
+      .table-container {
+        overflow-x: auto;
+
+        table {
+          width: 100%;
+          border-collapse: collapse;
+
+          th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+          }
+
+          th {
+            color: #666;
+            font-weight: 500;
+            font-size: 0.875rem;
+          }
+
+          td {
+            color: #333;
+          }
+
+          tbody tr:hover {
+            background-color: #f8f9fa;
+          }
+
+          .btn-icon {
+            padding: 0.5rem;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            transition: color 0.2s;
+
+            &:hover {
+              color: #1976d2;
+            }
+
+            i {
+              font-size: 1rem;
+            }
+          }
+        }
+      }
+    }
+  }
+} 

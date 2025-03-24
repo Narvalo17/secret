@@ -1,10 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@core/models/store.model';
-import { Product } from '@core/models/product.model';
 import { StoreService } from '@core/services/store.service';
-import { ProductService } from '@core/services/product.service';
-import { CartService } from '@core/services/cart.service';
 import { NotificationService } from '@core/services/notification.service';
 
 @Component({
@@ -14,97 +11,66 @@ import { NotificationService } from '@core/services/notification.service';
 })
 export class StoreDetailComponent implements OnInit {
   store: Store | null = null;
-  products: Product[] = [];
-  isLoading = false;
-  error: string | null = null;
+  loading = true;
+  error = false;
 
   constructor(
     private route: ActivatedRoute,
     private storeService: StoreService,
-    private productService: ProductService,
-    private cartService: CartService,
     private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    const storeId = this.route.snapshot.params['id'];
-    if (storeId) {
-      this.loadStoreDetails(+storeId);
-    }
+    this.loadStore();
   }
 
-  private loadStoreDetails(storeId: number): void {
-    this.isLoading = true;
-    this.error = null;
-    
+  private loadStore(): void {
+    const storeId = this.route.snapshot.params['id'];
+    if (!storeId) {
+      this.error = true;
+      this.loading = false;
+      this.notificationService.error('ID du magasin non trouvé');
+      return;
+    }
+
     this.storeService.getStoreById(storeId).subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.store = response.data;
-          this.loadStoreProducts(storeId);
         } else {
-          this.error = response.message || 'Magasin non trouvé';
-          this.isLoading = false;
+          this.error = true;
+          this.notificationService.error('Impossible de charger les détails du magasin');
         }
+        this.loading = false;
       },
-      error: (error) => {
-        this.error = 'Erreur lors du chargement du magasin';
-        this.isLoading = false;
-      }
-    });
-  }
-
-  private loadStoreProducts(storeId: number): void {
-    this.productService.getProductsByStore(storeId).subscribe({
-      next: (response) => {
-        this.products = Array.isArray(response.data) ? response.data : [];
-        this.isLoading = false;
-      },
-      error: (error) => {
-        this.error = 'Erreur lors du chargement des produits';
-        this.isLoading = false;
+      error: (err) => {
+        this.error = true;
+        this.loading = false;
+        this.notificationService.error('Erreur lors du chargement du magasin');
       }
     });
   }
 
   toggleFavorite(): void {
-    if (!this.store?.id) return;
+    if (!this.store) return;
 
-    if (this.store.isFavorite) {
-      this.storeService.removeFromFavorites(this.store.id).subscribe({
-        next: () => {
-          if (this.store) {
-            this.store.isFavorite = false;
-          }
-        },
-        error: () => {
-          this.error = 'Erreur lors du retrait des favoris';
-        }
-      });
-    } else {
-      this.storeService.addToFavorites(this.store.id).subscribe({
-        next: () => {
-          if (this.store) {
-            this.store.isFavorite = true;
-          }
-        },
-        error: () => {
-          this.error = 'Erreur lors de l\'ajout aux favoris';
-        }
-      });
-    }
-  }
+    const action = this.store.isFavorite
+      ? this.storeService.removeFromFavorites(this.store.id)
+      : this.storeService.addToFavorites(this.store.id);
 
-  addToCart(product: Product): void {
-    try {
-      this.cartService.addToCart(product, 1);
-      this.notificationService.success('Produit ajouté au panier');
-    } catch (error) {
-      if (error instanceof Error) {
-        this.notificationService.error(error.message);
-      } else {
-        this.notificationService.error('Erreur lors de l\'ajout au panier');
+    action.subscribe({
+      next: () => {
+        if (this.store) {
+          this.store.isFavorite = !this.store.isFavorite;
+          const message = this.store.isFavorite
+            ? 'Magasin ajouté aux favoris'
+            : 'Magasin retiré des favoris';
+          this.notificationService.success(message);
+        }
+      },
+      error: () => {
+        this.notificationService.error('Erreur lors de la mise à jour des favoris');
       }
-    }
+    });
   }
 } 

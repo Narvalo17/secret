@@ -19,75 +19,99 @@ export class ProductsComponent implements OnInit {
   products: Product[] = [
     {
       id: 1,
-      name: 'Panier de Fruits Frais',
-      description: 'Assortiment de fruits de saison : pommes, poires, oranges, bananes',
-      originalPrice: 12.99,
-      discountPercentage: 30,
-      currentPrice: 9.09,
-      quantity: 8,
-      imageUrl: 'assets/images/products/fruits.jpg',
+      name: 'Pommes',
+      description: 'Pommes fraîches et juteuses',
+      originalPrice: 2.50,
+      discountPercentage: 20,
+      currentPrice: 2.00,
+      quantity: 100,
+      price: 2.50,
+      stock: 100,
+      imageUrl: 'assets/images/products/apples.jpg',
       storeId: 1,
-      category: 'fruits'
+      category: 'fruits',
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 2,
-      name: 'Légumes Bio du Jour',
-      description: 'Sélection de légumes bio : carottes, tomates, courgettes, poivrons',
-      originalPrice: 9.99,
-      discountPercentage: 25,
-      currentPrice: 7.49,
-      quantity: 10,
-      imageUrl: 'assets/images/products/legumes.jpg',
+      name: 'Carottes',
+      description: 'Carottes bio et fraîches',
+      originalPrice: 1.80,
+      discountPercentage: 15,
+      currentPrice: 1.53,
+      quantity: 150,
+      price: 1.80,
+      stock: 150,
+      imageUrl: 'assets/images/products/carrots.jpg',
       storeId: 1,
-      category: 'legumes'
+      category: 'legumes',
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 3,
-      name: 'Tarte aux Pommes Maison',
-      description: 'Délicieuse tarte aux pommes fraîchement préparée',
-      originalPrice: 15.99,
-      discountPercentage: 40,
-      currentPrice: 9.59,
-      quantity: 5,
-      imageUrl: 'assets/images/products/tarte-pommes.jpg',
-      storeId: 2,
-      category: 'patisseries'
+      name: 'Croissant',
+      description: 'Croissant au beurre',
+      originalPrice: 1.20,
+      discountPercentage: 10,
+      currentPrice: 1.08,
+      quantity: 50,
+      price: 1.20,
+      stock: 50,
+      imageUrl: 'assets/images/products/croissant.jpg',
+      storeId: 1,
+      category: 'patisseries',
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 4,
-      name: 'Sandwich Club Poulet',
-      description: 'Pain frais, poulet grillé, bacon, laitue, tomate, mayonnaise',
-      originalPrice: 6.99,
-      discountPercentage: 20,
-      currentPrice: 5.59,
-      quantity: 12,
-      imageUrl: 'assets/images/products/sandwich.jpg',
-      storeId: 3,
-      category: 'sandwichs'
+      name: 'Sandwich Jambon',
+      description: 'Sandwich au jambon et fromage',
+      originalPrice: 4.50,
+      discountPercentage: 0,
+      currentPrice: 4.50,
+      quantity: 30,
+      price: 4.50,
+      stock: 30,
+      imageUrl: 'assets/images/products/ham-sandwich.jpg',
+      storeId: 1,
+      category: 'sandwichs',
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 5,
-      name: 'Plateau Repas Végétarien',
-      description: 'Quinoa, légumes grillés, houmous, salade verte',
-      originalPrice: 13.99,
-      discountPercentage: 35,
-      currentPrice: 9.09,
-      quantity: 6,
-      imageUrl: 'assets/images/products/plateau-vege.jpg',
-      storeId: 2,
-      category: 'plateaux'
+      name: 'Plateau de Fruits',
+      description: 'Assortiment de fruits frais',
+      originalPrice: 12.00,
+      discountPercentage: 25,
+      currentPrice: 9.00,
+      quantity: 20,
+      price: 12.00,
+      stock: 20,
+      imageUrl: 'assets/images/products/fruit-tray.jpg',
+      storeId: 1,
+      category: 'plateaux',
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
     {
       id: 6,
-      name: 'Assortiment de Viennoiseries',
-      description: 'Croissants, pains au chocolat, chaussons aux pommes',
-      originalPrice: 8.99,
-      discountPercentage: 45,
-      currentPrice: 4.94,
-      quantity: 15,
-      imageUrl: 'assets/images/products/viennoiseries.jpg',
-      storeId: 4,
-      category: 'patisseries'
+      name: 'Éclair au Chocolat',
+      description: 'Éclair au chocolat noir',
+      originalPrice: 2.80,
+      discountPercentage: 0,
+      currentPrice: 2.80,
+      quantity: 40,
+      price: 2.80,
+      stock: 40,
+      imageUrl: 'assets/images/products/chocolate-eclair.jpg',
+      storeId: 1,
+      category: 'patisseries',
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ];
 
@@ -153,7 +177,7 @@ export class ProductsComponent implements OnInit {
       .filter(product => 
         (this.selectedCategory === 'all' || product.category === this.selectedCategory) &&
         (product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        product.description.toLowerCase().includes(this.searchTerm.toLowerCase()))
+        (product.description?.toLowerCase() || '').includes(this.searchTerm.toLowerCase()))
       );
   }
 } 

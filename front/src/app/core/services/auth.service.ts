@@ -4,9 +4,12 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { User, UserResponse } from '../models/user.model';
+import { SessionService } from './session.service';
 
 export interface AuthResponse {
   token: string;
+  refreshToken: string;
+  expiresIn: number;
   user: User;
 }
 
@@ -16,50 +19,84 @@ export interface AuthResponse {
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-  private apiUrl = `${environment.apiUrl}/user`;
+  private readonly apiUrl = `${environment.apiUrl}/auth`;
 
-  constructor(private http: HttpClient) {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // TODO: Vérifier la validité du token
-      this.getCurrentUser().subscribe();
+  constructor(
+    private http: HttpClient,
+    private sessionService: SessionService
+  ) {
+    if (this.sessionService.isSessionValid()) {
+      this.loadUserProfile().subscribe();
     }
   }
 
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/login`, { email, password })
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password })
       .pipe(
         tap(response => {
-          localStorage.setItem('token', response.token);
+          this.sessionService.setSession(
+            response.token,
+            response.refreshToken,
+            response.expiresIn
+          );
           this.currentUserSubject.next(response.user);
         })
       );
   }
 
   register(username: string, email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/register`, { username, email, password })
+    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, { username, email, password })
       .pipe(
         tap(response => {
-          localStorage.setItem('token', response.token);
+          this.sessionService.setSession(
+            response.token,
+            response.refreshToken,
+            response.expiresIn
+          );
           this.currentUserSubject.next(response.user);
         })
       );
   }
 
   logout(): void {
-    localStorage.removeItem('token');
+    const refreshToken = this.sessionService.getRefreshToken();
+    if (refreshToken) {
+      this.http.post(`${this.apiUrl}/logout`, { refreshToken }).subscribe();
+    }
+    this.sessionService.clearSession();
     this.currentUserSubject.next(null);
   }
 
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${environment.apiUrl}/auth/me`)
+  refreshToken(refreshToken: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken })
       .pipe(
-        tap(user => this.currentUserSubject.next(user))
+        tap(response => {
+          this.sessionService.setSession(
+            response.token,
+            response.refreshToken,
+            response.expiresIn
+          );
+        })
       );
   }
 
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('token');
+  isLoggedIn(): boolean {
+    return this.sessionService.isSessionValid();
+  }
+
+  isAdmin(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'ADMIN';
+  }
+
+  private loadUserProfile(): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/profile`).pipe(
+      tap(user => this.currentUserSubject.next(user))
+    );
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
   }
 
   getToken(): string | null {
@@ -67,18 +104,34 @@ export class AuthService {
   }
 
   registerUser(user: User): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${this.apiUrl}/register`, user);
+    return this.http.post<UserResponse>(`${environment.apiUrl}/user/register`, user);
   }
 
   loginUser(credentials: { email: string; password: string }): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${this.apiUrl}/login`, credentials);
+    return this.http.post<UserResponse>(`${environment.apiUrl}/user/login`, credentials);
   }
 
   updatePassword(userId: number, passwords: { oldPassword: string; newPassword: string }): Observable<UserResponse> {
-    return this.http.put<UserResponse>(`${this.apiUrl}/reset/password/${userId}`, passwords);
+    return this.http.put<UserResponse>(`${environment.apiUrl}/user/reset/password/${userId}`, passwords);
   }
 
   createUser(user: User): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${this.apiUrl}/create`, user);
+    return this.http.post<UserResponse>(`${environment.apiUrl}/user/create`, user);
+  }
+
+  // Nouvelles méthodes pour la réinitialisation du mot de passe
+  requestPasswordReset(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/password-reset/request`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/password-reset/reset`, {
+      token,
+      newPassword
+    });
+  }
+
+  validateResetToken(token: string): Observable<{ valid: boolean }> {
+    return this.http.get<{ valid: boolean }>(`${this.apiUrl}/password-reset/validate/${token}`);
   }
 } 

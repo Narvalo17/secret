@@ -1,0 +1,114 @@
+<div class="admin-dashboard">
+  <header class="dashboard-header">
+    <h1>Tableau de bord administrateur</h1>
+    <button class="refresh-btn" (click)="refreshData()">
+      <i class="fas fa-sync-alt"></i> Actualiser
+    </button>
+  </header>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-euro-sign"></i>
+      </div>
+      <div class="stat-content">
+        <h3>Ventes totales</h3>
+        <p class="stat-value">{{ statistics.totalSales | currency:'EUR' }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-store"></i>
+      </div>
+      <div class="stat-content">
+        <h3>Magasins</h3>
+        <p class="stat-value">{{ statistics.totalStores }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-box"></i>
+      </div>
+      <div class="stat-content">
+        <h3>Produits</h3>
+        <p class="stat-value">{{ statistics.totalProducts }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <div class="stat-content">
+        <h3>Panier moyen</h3>
+        <p class="stat-value">{{ statistics.averageOrderValue | currency:'EUR' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-content">
+    <div class="recent-section">
+      <h2>Magasins récents</h2>
+      <div class="loading-spinner" *ngIf="loading.stores">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <div class="table-container" *ngIf="!loading.stores">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Localisation</th>
+              <th>Catégorie</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let store of recentStores">
+              <td>{{ store.name }}</td>
+              <td>{{ store.location }}</td>
+              <td>{{ store.category }}</td>
+              <td>
+                <button class="btn-icon" [routerLink]="['/admin/stores', store.id]">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="recent-section">
+      <h2>Produits récents</h2>
+      <div class="loading-spinner" *ngIf="loading.products">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <div class="table-container" *ngIf="!loading.products">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Prix</th>
+              <th>Stock</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of recentProducts">
+              <td>{{ product.name }}</td>
+              <td>{{ product.price | currency:'EUR' }}</td>
+              <td>{{ product.quantity }}</td>
+              <td>
+                <button class="btn-icon" [routerLink]="['/admin/products', product.id]">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div> 

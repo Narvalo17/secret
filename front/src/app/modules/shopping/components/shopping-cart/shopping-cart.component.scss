@@ -1,0 +1,147 @@
+.shopping-cart {
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+
+    h2 {
+      margin: 0;
+      color: #333;
+    }
+  }
+
+  .cart-content {
+    .loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+
+      i {
+        margin-right: 0.5rem;
+      }
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+
+      i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        margin: 0;
+        font-size: 1.2rem;
+      }
+    }
+
+    .cart-items {
+      .cart-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-bottom: 1px solid #eee;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .item-image {
+          width: 100px;
+          height: 100px;
+          margin-right: 1rem;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 4px;
+          }
+        }
+
+        .item-details {
+          flex: 1;
+
+          h3 {
+            margin: 0 0 0.5rem;
+            color: #333;
+          }
+
+          .description {
+            color: #666;
+            margin: 0 0 0.5rem;
+          }
+
+          .price {
+            color: #2c3e50;
+            font-weight: bold;
+            margin: 0;
+          }
+        }
+
+        .item-quantity {
+          display: flex;
+          align-items: center;
+          margin: 0 2rem;
+
+          button {
+            padding: 0.25rem 0.5rem;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+
+            &:hover:not([disabled]) {
+              background-color: #e9ecef;
+            }
+          }
+
+          span {
+            margin: 0 1rem;
+            min-width: 2rem;
+            text-align: center;
+          }
+        }
+
+        .item-total {
+          font-weight: bold;
+          color: #2c3e50;
+          margin: 0 2rem;
+          min-width: 100px;
+          text-align: right;
+        }
+      }
+    }
+
+    .cart-summary {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 2px solid #eee;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+
+      .total {
+        margin-right: 2rem;
+        font-size: 1.2rem;
+
+        .amount {
+          font-weight: bold;
+          color: #2c3e50;
+          margin-left: 1rem;
+        }
+      }
+
+      .btn-primary {
+        padding: 0.75rem 2rem;
+        font-size: 1.1rem;
+      }
+    }
+  }
+} 

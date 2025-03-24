@@ -1,14 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { Product, ProductResponse } from '../models/product.model';
+import { map } from 'rxjs/operators';
+import { Product, ProductResponse, ProductFilter } from '../models/product.model';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private apiUrl = `${environment.apiUrl}/admin/product`;
+  private readonly apiUrl = `${environment.apiUrl}/admin/product`;
   private products: Product[] = [
     {
       id: 1,
@@ -18,6 +19,8 @@ export class ProductService {
       discountPercentage: 50,
       currentPrice: 0.60,
       quantity: 15,
+      price: 1.20,
+      stock: 15,
       imageUrl: 'assets/images/products/baguette.jpg',
       storeId: 1,
       category: 'Pains',
@@ -32,6 +35,8 @@ export class ProductService {
       discountPercentage: 40,
       currentPrice: 0.90,
       quantity: 20,
+      price: 1.50,
+      stock: 20,
       imageUrl: 'assets/images/products/croissant.jpg',
       storeId: 1,
       category: 'Viennoiseries',
@@ -50,7 +55,9 @@ export class ProductService {
       storeId: 1,
       category: 'Pains Spéciaux',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      price: 0,
+      stock: 0
     },
     {
       id: 4,
@@ -64,39 +71,52 @@ export class ProductService {
       storeId: 1,
       category: 'Pâtisseries',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
+      price: 0,
+      stock: 0
     }
   ];
 
   constructor(private http: HttpClient) {}
 
-  getAllProducts(): Observable<ProductResponse> {
-    return of({ success: true, message: 'Produits récupérés avec succès', data: this.products });
+  getAllProducts(): Observable<Product[]> {
+    return of(this.products);
   }
 
-  getProductById(id: number): Observable<ProductResponse> {
-    const product = this.products.find(p => p.id === id);
-    if (product) {
-      return of({ success: true, message: 'Produit trouvé', data: product });
-    }
-    return of({ success: false, message: 'Produit non trouvé', data: undefined });
+  getProductById(id: number): Observable<Product | undefined> {
+    return of(this.products.find(p => p.id === id));
   }
 
-  createProduct(product: Product): Observable<ProductResponse> {
-    return this.http.post<ProductResponse>(`${this.apiUrl}`, product);
+  getProducts(filter?: ProductFilter): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.apiUrl}/filters`, { params: filter as any });
   }
 
-  updateProduct(id: number, product: Product): Observable<ProductResponse> {
-    return this.http.put<ProductResponse>(`${this.apiUrl}/${id}`, product);
+  getProduct(id: number): Observable<Product> {
+    return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
-  deleteProduct(id: number): Observable<ProductResponse> {
-    return this.http.delete<ProductResponse>(`${this.apiUrl}/${id}`);
+  createProduct(product: Omit<Product, 'id'>): Observable<Product> {
+    return this.http.post<Product>(`${this.apiUrl}`, product);
   }
 
-  getProductsByStore(storeId: number): Observable<ProductResponse> {
-    const storeProducts = this.products.filter(product => product.storeId === storeId);
-    return of({ success: true, message: 'Produits du magasin récupérés avec succès', data: storeProducts });
+  updateProduct(id: number, product: Partial<Product>): Observable<Product> {
+    return this.http.put<Product>(`${this.apiUrl}/${id}`, product);
+  }
+
+  deleteProduct(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  deleteProducts(ids: number[]): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/delete-batch`, { ids });
+  }
+
+  cloneProduct(id: number): Observable<Product> {
+    return this.http.post<Product>(`${this.apiUrl}/${id}/clone`, {});
+  }
+
+  getProductsByStore(storeId: number): Observable<Product[]> {
+    return this.http.get<Product[]>(`${this.apiUrl}/products/${storeId}`);
   }
 
   getProductFilters(): Observable<any> {

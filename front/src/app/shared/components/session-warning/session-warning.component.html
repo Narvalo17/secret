@@ -1,0 +1,19 @@
+<div class="session-warning" *ngIf="showWarning">
+  <div class="warning-content">
+    <div class="warning-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <div class="warning-message">
+      <h4>Votre session va expirer</h4>
+      <p>Votre session expirera dans {{ remainingTime }} minutes. Voulez-vous la prolonger ?</p>
+    </div>
+    <div class="warning-actions">
+      <button class="btn btn-primary" (click)="onExtendSession()">
+        Prolonger la session
+      </button>
+      <button class="btn btn-secondary" (click)="onLogout()">
+        Se déconnecter
+      </button>
+    </div>
+  </div>
+</div> 

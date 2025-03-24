@@ -1,0 +1,209 @@
+<div class="product-management">
+  <div class="management-header">
+    <h1>Gestion des produits</h1>
+    <div class="header-actions">
+      <button class="btn btn-danger" (click)="deleteSelectedProducts()" [disabled]="selectedProducts.size === 0">
+        <i class="fas fa-trash"></i> Supprimer la sélection
+      </button>
+      <button class="btn btn-primary" (click)="toggleForm()">
+        <i class="fas" [class.fa-plus]="!showForm" [class.fa-minus]="showForm"></i>
+        {{ showForm ? 'Fermer' : 'Ajouter un produit' }}
+      </button>
+    </div>
+  </div>
+
+  <div class="search-section">
+    <form [formGroup]="searchForm">
+      <div class="search-form">
+        <div class="form-group">
+          <label for="searchTerm">Rechercher</label>
+          <input type="text" id="searchTerm" class="form-control" formControlName="searchTerm" placeholder="Nom ou description...">
+        </div>
+        <div class="form-group">
+          <label for="category">Catégorie</label>
+          <select id="category" class="form-control" formControlName="category">
+            <option value="">Toutes les catégories</option>
+            <option value="Électronique">Électronique</option>
+            <option value="Vêtements">Vêtements</option>
+            <option value="Alimentation">Alimentation</option>
+            <option value="Maison">Maison</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="store">Magasin</label>
+          <select id="store" class="form-control" formControlName="store">
+            <option value="">Tous les magasins</option>
+            <option *ngFor="let store of stores" [value]="store.id">{{ store.name }}</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="minPrice">Prix minimum</label>
+          <input type="number" id="minPrice" class="form-control" formControlName="minPrice" min="0">
+        </div>
+        <div class="form-group">
+          <label for="maxPrice">Prix maximum</label>
+          <input type="number" id="maxPrice" class="form-control" formControlName="maxPrice" min="0">
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="product-form" *ngIf="showForm">
+    <h2>{{ editingProduct ? 'Modifier le produit' : 'Ajouter un produit' }}</h2>
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()">
+      <div class="form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">Nom du produit*</label>
+            <input type="text" id="name" class="form-control" formControlName="name"
+              [class.is-invalid]="productForm.get('name')?.invalid && productForm.get('name')?.touched">
+            <div class="invalid-feedback" *ngIf="productForm.get('name')?.errors?.['required']">
+              Le nom est requis
+            </div>
+            <div class="invalid-feedback" *ngIf="productForm.get('name')?.errors?.['minlength']">
+              Le nom doit contenir au moins 3 caractères
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="category">Catégorie*</label>
+            <select id="category" class="form-control" formControlName="category"
+              [class.is-invalid]="productForm.get('category')?.invalid && productForm.get('category')?.touched">
+              <option value="">Sélectionner une catégorie</option>
+              <option value="Électronique">Électronique</option>
+              <option value="Vêtements">Vêtements</option>
+              <option value="Alimentation">Alimentation</option>
+              <option value="Maison">Maison</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="productForm.get('category')?.errors?.['required']">
+              La catégorie est requise
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description*</label>
+          <textarea id="description" class="form-control" formControlName="description" rows="3"
+            [class.is-invalid]="productForm.get('description')?.invalid && productForm.get('description')?.touched"></textarea>
+          <div class="invalid-feedback" *ngIf="productForm.get('description')?.errors?.['required']">
+            La description est requise
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="originalPrice">Prix original*</label>
+            <input type="number" id="originalPrice" class="form-control" formControlName="originalPrice" min="0"
+              [class.is-invalid]="productForm.get('originalPrice')?.invalid && productForm.get('originalPrice')?.touched">
+            <div class="invalid-feedback" *ngIf="productForm.get('originalPrice')?.errors?.['required']">
+              Le prix est requis
+            </div>
+            <div class="invalid-feedback" *ngIf="productForm.get('originalPrice')?.errors?.['min']">
+              Le prix doit être supérieur à 0
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="discountPercentage">Pourcentage de réduction</label>
+            <input type="number" id="discountPercentage" class="form-control" formControlName="discountPercentage" min="0" max="100"
+              [class.is-invalid]="productForm.get('discountPercentage')?.invalid && productForm.get('discountPercentage')?.touched">
+            <div class="invalid-feedback" *ngIf="productForm.get('discountPercentage')?.errors?.['min']">
+              La réduction doit être entre 0 et 100
+            </div>
+            <div class="invalid-feedback" *ngIf="productForm.get('discountPercentage')?.errors?.['max']">
+              La réduction doit être entre 0 et 100
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="quantity">Quantité*</label>
+            <input type="number" id="quantity" class="form-control" formControlName="quantity" min="0"
+              [class.is-invalid]="productForm.get('quantity')?.invalid && productForm.get('quantity')?.touched">
+            <div class="invalid-feedback" *ngIf="productForm.get('quantity')?.errors?.['required']">
+              La quantité est requise
+            </div>
+            <div class="invalid-feedback" *ngIf="productForm.get('quantity')?.errors?.['min']">
+              La quantité doit être supérieure à 0
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="storeId">Magasin*</label>
+            <select id="storeId" class="form-control" formControlName="storeId"
+              [class.is-invalid]="productForm.get('storeId')?.invalid && productForm.get('storeId')?.touched">
+              <option value="">Sélectionner un magasin</option>
+              <option *ngFor="let store of stores" [value]="store.id">{{ store.name }}</option>
+            </select>
+            <div class="invalid-feedback" *ngIf="productForm.get('storeId')?.errors?.['required']">
+              Le magasin est requis
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="resetForm()">
+            <i class="fas fa-times"></i> Annuler
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="productForm.invalid">
+            <i class="fas fa-save"></i> {{ editingProduct ? 'Mettre à jour' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="products-list">
+    <div class="loading-spinner" *ngIf="loading.products">
+      <i class="fas fa-spinner fa-spin"></i> Chargement des produits...
+    </div>
+
+    <div class="no-products" *ngIf="!loading.products && products.length === 0">
+      <i class="fas fa-box-open"></i>
+      <p>Aucun produit trouvé</p>
+    </div>
+
+    <div class="products-grid" *ngIf="!loading.products && products.length > 0">
+      <div class="select-all">
+        <label class="checkbox-container">
+          <input type="checkbox" [checked]="selectedProducts.size === products.length" (change)="selectAllProducts()">
+          <span class="checkmark"></span>
+          Sélectionner tous les produits
+        </label>
+      </div>
+
+      <div class="product-card" *ngFor="let product of products">
+        <div class="product-header">
+          <label class="checkbox-container">
+            <input type="checkbox" [checked]="selectedProducts.has(product.id)" (change)="toggleProductSelection(product.id)">
+            <span class="checkmark"></span>
+          </label>
+          <div class="product-actions">
+            <button class="btn-icon" (click)="editProduct(product)" title="Modifier">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon" (click)="cloneProduct(product)" title="Cloner">
+              <i class="fas fa-clone"></i>
+            </button>
+            <button class="btn-icon text-danger" (click)="deleteProduct(product.id)" title="Supprimer">
+              <i class="fas fa-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="product-content">
+          <h3>{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+          <div class="product-details">
+            <div class="price">
+              <span class="original-price" *ngIf="product.discountPercentage > 0">{{ product.originalPrice | currency:'EUR' }}</span>
+              <span class="current-price">{{ product.currentPrice | currency:'EUR' }}</span>
+              <span class="discount" *ngIf="product.discountPercentage > 0">-{{ product.discountPercentage }}%</span>
+            </div>
+            <p><i class="fas fa-box"></i> Stock: {{ product.quantity }}</p>
+            <p><i class="fas fa-tag"></i> {{ product.category }}</p>
+            <p><i class="fas fa-store"></i> {{ getStoreName(product.storeId) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

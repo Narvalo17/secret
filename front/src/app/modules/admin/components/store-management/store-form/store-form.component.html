@@ -1,0 +1,61 @@
+<form [formGroup]="storeForm" (ngSubmit)="onSubmit()" class="store-form">
+  <div class="form-group">
+    <label for="name">Nom du magasin *</label>
+    <input type="text" id="name" formControlName="name" class="form-control" placeholder="Nom du magasin">
+    <div class="error-message" *ngIf="storeForm.get('name')?.errors?.['required'] && storeForm.get('name')?.touched">
+      Le nom du magasin est requis
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="address">Adresse *</label>
+    <input type="text" id="address" formControlName="address" class="form-control" placeholder="Adresse complète">
+    <div class="error-message" *ngIf="storeForm.get('address')?.errors?.['required'] && storeForm.get('address')?.touched">
+      L'adresse est requise
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="email">Email *</label>
+    <input type="email" id="email" formControlName="email" class="form-control" placeholder="email@exemple.com">
+    <div class="error-message" *ngIf="storeForm.get('email')?.errors?.['required'] && storeForm.get('email')?.touched">
+      L'email est requis
+    </div>
+    <div class="error-message" *ngIf="storeForm.get('email')?.errors?.['email'] && storeForm.get('email')?.touched">
+      Format d'email invalide
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="phone">Téléphone *</label>
+    <input type="tel" id="phone" formControlName="phone" class="form-control" placeholder="0123456789">
+    <div class="error-message" *ngIf="storeForm.get('phone')?.errors?.['required'] && storeForm.get('phone')?.touched">
+      Le numéro de téléphone est requis
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="openingHours">Horaires d'ouverture *</label>
+    <input type="text" id="openingHours" formControlName="openingHours" class="form-control" placeholder="Lun-Ven: 9h-18h">
+    <div class="error-message" *ngIf="storeForm.get('openingHours')?.errors?.['required'] && storeForm.get('openingHours')?.touched">
+      Les horaires d'ouverture sont requis
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="description">Description</label>
+    <textarea id="description" formControlName="description" class="form-control" rows="3" placeholder="Description du magasin"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label for="imageUrl">URL de l'image</label>
+    <input type="url" id="imageUrl" formControlName="imageUrl" class="form-control" placeholder="https://exemple.com/image.jpg">
+  </div>
+
+  <div class="form-actions">
+    <button type="button" class="btn btn-secondary" (click)="onCancel()">Annuler</button>
+    <button type="submit" class="btn btn-primary" [disabled]="!storeForm.valid">
+      {{ store ? 'Mettre à jour' : 'Créer' }}
+    </button>
+  </div>
+</form> 

@@ -1,14 +1,14 @@
 export interface User {
-  id?: number;
-  username: string;
+  id: number;
   email: string;
-  password?: string;
+  firstName?: string;
+  lastName?: string;
+  role: 'ADMIN' | 'USER';
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 export interface UserResponse {
-  success: boolean;
-  message: string;
-  data?: User;
+  user: User;
+  token: string;
 } 

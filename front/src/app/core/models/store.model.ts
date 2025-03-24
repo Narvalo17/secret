@@ -1,18 +1,20 @@
 export interface Store {
-  id?: number;
+  id: number;
   name: string;
+  description: string;
+  category: string;
+  location: string;
   address: string;
-  description?: string;
+  openingHours: string;
+  contactEmail: string;
+  contactPhone: string;
+  email: string;
+  phone: string;
   imageUrl?: string;
   rating?: number;
   distance?: number;
-  category?: string;
   isFavorite?: boolean;
-  openingHours?: string;
-  phone?: string;
   additionalInfo?: string;
-  qrCode?: string;
-  userId: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -20,5 +22,17 @@ export interface Store {
 export interface StoreResponse {
   success: boolean;
   message: string;
-  data?: Store | Store[];
+  data?: Store[];
+}
+
+export interface CreateStoreDto {
+  name: string;
+  description: string;
+  category: string;
+  location: string;
+  address: string;
+  openingHours: string;
+  contactEmail: string;
+  contactPhone: string;
+  imageUrl?: string;
 } 

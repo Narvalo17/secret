@@ -1,0 +1,205 @@
+<div class="store-management">
+  <header class="management-header">
+    <h1>Gestion des magasins</h1>
+    <button class="btn btn-primary" (click)="toggleForm()">
+      <i class="fas" [ngClass]="showForm ? 'fa-times' : 'fa-plus'"></i>
+      {{ showForm ? 'Annuler' : 'Nouveau magasin' }}
+    </button>
+  </header>
+
+  <div class="search-section" *ngIf="!showForm">
+    <form [formGroup]="searchForm" class="search-form">
+      <div class="form-group">
+        <input
+          type="text"
+          formControlName="searchTerm"
+          class="form-control"
+          placeholder="Rechercher un magasin..."
+        >
+      </div>
+
+      <div class="form-group">
+        <select formControlName="category" class="form-control">
+          <option value="">Toutes les catégories</option>
+          <option value="restaurant">Restaurant</option>
+          <option value="supermarket">Supermarché</option>
+          <option value="clothing">Vêtements</option>
+          <option value="electronics">Électronique</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <input
+          type="text"
+          formControlName="location"
+          class="form-control"
+          placeholder="Localisation..."
+        >
+      </div>
+    </form>
+  </div>
+
+  <div class="store-form" *ngIf="showForm">
+    <h2>{{ editingStore ? 'Modifier le magasin' : 'Nouveau magasin' }}</h2>
+    <form [formGroup]="storeForm" (ngSubmit)="onSubmit()" class="form">
+      <div class="form-group">
+        <label for="name">Nom du magasin</label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="form-control"
+          [ngClass]="{'is-invalid': storeForm.get('name')?.invalid && storeForm.get('name')?.touched}"
+        >
+        <div class="invalid-feedback" *ngIf="storeForm.get('name')?.errors?.['required']">
+          Le nom est requis
+        </div>
+        <div class="invalid-feedback" *ngIf="storeForm.get('name')?.errors?.['minlength']">
+          Le nom doit contenir au moins 3 caractères
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          formControlName="description"
+          class="form-control"
+          rows="3"
+          [ngClass]="{'is-invalid': storeForm.get('description')?.invalid && storeForm.get('description')?.touched}"
+        ></textarea>
+        <div class="invalid-feedback" *ngIf="storeForm.get('description')?.errors?.['required']">
+          La description est requise
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="location">Localisation</label>
+          <input
+            type="text"
+            id="location"
+            formControlName="location"
+            class="form-control"
+            [ngClass]="{'is-invalid': storeForm.get('location')?.invalid && storeForm.get('location')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="storeForm.get('location')?.errors?.['required']">
+            La localisation est requise
+          </div>
+        </div>
+
+        <div class="form-group col-md-6">
+          <label for="category">Catégorie</label>
+          <select
+            id="category"
+            formControlName="category"
+            class="form-control"
+            [ngClass]="{'is-invalid': storeForm.get('category')?.invalid && storeForm.get('category')?.touched}"
+          >
+            <option value="">Sélectionner une catégorie</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="supermarket">Supermarché</option>
+            <option value="clothing">Vêtements</option>
+            <option value="electronics">Électronique</option>
+          </select>
+          <div class="invalid-feedback" *ngIf="storeForm.get('category')?.errors?.['required']">
+            La catégorie est requise
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="openingHours">Horaires d'ouverture</label>
+        <input
+          type="text"
+          id="openingHours"
+          formControlName="openingHours"
+          class="form-control"
+          [ngClass]="{'is-invalid': storeForm.get('openingHours')?.invalid && storeForm.get('openingHours')?.touched}"
+        >
+        <div class="invalid-feedback" *ngIf="storeForm.get('openingHours')?.errors?.['required']">
+          Les horaires d'ouverture sont requis
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="contactEmail">Email</label>
+          <input
+            type="email"
+            id="contactEmail"
+            formControlName="contactEmail"
+            class="form-control"
+            [ngClass]="{'is-invalid': storeForm.get('contactEmail')?.invalid && storeForm.get('contactEmail')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="storeForm.get('contactEmail')?.errors?.['required']">
+            L'email est requis
+          </div>
+          <div class="invalid-feedback" *ngIf="storeForm.get('contactEmail')?.errors?.['email']">
+            L'email n'est pas valide
+          </div>
+        </div>
+
+        <div class="form-group col-md-6">
+          <label for="contactPhone">Téléphone</label>
+          <input
+            type="tel"
+            id="contactPhone"
+            formControlName="contactPhone"
+            class="form-control"
+            [ngClass]="{'is-invalid': storeForm.get('contactPhone')?.invalid && storeForm.get('contactPhone')?.touched}"
+          >
+          <div class="invalid-feedback" *ngIf="storeForm.get('contactPhone')?.errors?.['required']">
+            Le numéro de téléphone est requis
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="resetForm()">Annuler</button>
+        <button type="submit" class="btn btn-primary" [disabled]="storeForm.invalid">
+          {{ editingStore ? 'Mettre à jour' : 'Créer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="stores-list" *ngIf="!showForm">
+    <div class="loading-spinner" *ngIf="loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <span>Chargement des magasins...</span>
+    </div>
+
+    <div class="no-stores" *ngIf="!loading && stores.length === 0">
+      <i class="fas fa-store-alt-slash"></i>
+      <p>Aucun magasin trouvé</p>
+    </div>
+
+    <div class="stores-grid" *ngIf="!loading && stores.length > 0">
+      <div class="store-card" *ngFor="let store of stores">
+        <div class="store-header">
+          <h3>{{ store.name }}</h3>
+          <div class="store-actions">
+            <button class="btn-icon" (click)="editStore(store)" title="Modifier">
+              <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon text-danger" (click)="deleteStore(store.id)" title="Supprimer">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="store-content">
+          <p class="store-description">{{ store.description }}</p>
+          <div class="store-details">
+            <p><i class="fas fa-map-marker-alt"></i> {{ store.location }}</p>
+            <p><i class="fas fa-tag"></i> {{ store.category }}</p>
+            <p><i class="fas fa-clock"></i> {{ store.openingHours }}</p>
+            <p><i class="fas fa-envelope"></i> {{ store.contactEmail }}</p>
+            <p><i class="fas fa-phone"></i> {{ store.contactPhone }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

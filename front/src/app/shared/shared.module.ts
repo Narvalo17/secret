@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NotificationComponent } from './components/notification/notification.component';
 
 @NgModule({
@@ -10,15 +10,15 @@ import { NotificationComponent } from './components/notification/notification.co
   ],
   imports: [
     CommonModule,
+    RouterModule,
     FormsModule,
-    ReactiveFormsModule,
-    RouterModule
+    ReactiveFormsModule
   ],
   exports: [
     CommonModule,
+    RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule,
     NotificationComponent
   ]
 })
