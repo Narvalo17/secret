@@ -7,11 +7,12 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@Validated
 @Tag(name = "Catégories", description = "API de gestion des catégories")
 public class CategoryController {
     private final CategoryService categoryService;
@@ -26,23 +28,19 @@ public class CategoryController {
     @Operation(summary = "Créer une catégorie", description = "Création d'une nouvelle catégorie")
     @ApiResponse(responseCode = "200", description = "Catégorie créée avec succès")
     @ApiResponse(responseCode = "400", description = "Données invalides")
-    @ApiResponse(responseCode = "403", description = "Accès non autorisé")
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CategoryDto> createCategory(@RequestBody CategoryDto categoryDto) {
+    public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.createCategory(categoryDto));
     }
 
     @Operation(summary = "Mettre à jour une catégorie", description = "Modification d'une catégorie existante")
     @ApiResponse(responseCode = "200", description = "Catégorie mise à jour avec succès")
     @ApiResponse(responseCode = "400", description = "Données invalides")
-    @ApiResponse(responseCode = "403", description = "Accès non autorisé")
     @ApiResponse(responseCode = "404", description = "Catégorie non trouvée")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryDto> updateCategory(
             @Parameter(description = "ID de la catégorie") @PathVariable Long id,
-            @RequestBody CategoryDto categoryDto) {
+            @Valid @RequestBody CategoryDto categoryDto) {
         return ResponseEntity.ok(categoryService.updateCategory(id, categoryDto));
     }
 
@@ -82,11 +80,9 @@ public class CategoryController {
 
     @Operation(summary = "Supprimer une catégorie", description = "Suppression d'une catégorie")
     @ApiResponse(responseCode = "204", description = "Catégorie supprimée avec succès")
-    @ApiResponse(responseCode = "403", description = "Accès non autorisé")
     @ApiResponse(responseCode = "404", description = "Catégorie non trouvée")
     @ApiResponse(responseCode = "400", description = "Impossible de supprimer une catégorie avec des sous-catégories")
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteCategory(
             @Parameter(description = "ID de la catégorie") @PathVariable Long id) {
         categoryService.deleteCategory(id);

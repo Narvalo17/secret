@@ -13,7 +13,7 @@ import { Cart } from '@core/models/cart.model';
 export class NavbarComponent implements OnInit, OnDestroy {
   isMenuOpen = false;
   isUserMenuOpen = false;
-  isAuthenticated = false;
+  isLoggedIn = false;
   cartItemCount = 0;
   private cartSubscription: Subscription | undefined;
 
@@ -25,7 +25,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
-      this.isAuthenticated = !!user;
+      this.isLoggedIn = !!user;
     });
 
     this.cartSubscription = this.cartService.getCart().subscribe((cart: Cart) => {

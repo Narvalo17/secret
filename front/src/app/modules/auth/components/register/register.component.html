@@ -1,85 +1,66 @@
 <div class="register-container">
-  <h2>Inscription</h2>
-  
-  <div class="alert alert-danger" *ngIf="error">
-    {{ error }}
-  </div>
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>Inscription</mat-card-title>
+    </mat-card-header>
 
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="username">Nom d'utilisateur</label>
-      <input 
-        type="text" 
-        id="username" 
-        formControlName="username" 
-        class="form-control"
-        [class.is-invalid]="registerForm.get('username')?.invalid && registerForm.get('username')?.touched"
-      >
-      <div class="invalid-feedback" *ngIf="registerForm.get('username')?.errors?.['required']">
-        Le nom d'utilisateur est requis
-      </div>
-      <div class="invalid-feedback" *ngIf="registerForm.get('username')?.errors?.['minlength']">
-        Le nom d'utilisateur doit contenir au moins 3 caractères
-      </div>
-    </div>
+    <mat-card-content>
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="firstName" placeholder="Votre prénom">
+            <mat-error *ngIf="registerForm.get('firstName')?.errors?.['required']">Le prénom est requis</mat-error>
+            <mat-error *ngIf="registerForm.get('firstName')?.errors?.['minlength']">Le prénom doit contenir au moins 2 caractères</mat-error>
+          </mat-form-field>
 
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input 
-        type="email" 
-        id="email" 
-        formControlName="email" 
-        class="form-control"
-        [class.is-invalid]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
-      >
-      <div class="invalid-feedback" *ngIf="registerForm.get('email')?.errors?.['required']">
-        L'email est requis
-      </div>
-      <div class="invalid-feedback" *ngIf="registerForm.get('email')?.errors?.['email']">
-        Format d'email invalide
-      </div>
-    </div>
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="lastName" placeholder="Votre nom">
+            <mat-error *ngIf="registerForm.get('lastName')?.errors?.['required']">Le nom est requis</mat-error>
+            <mat-error *ngIf="registerForm.get('lastName')?.errors?.['minlength']">Le nom doit contenir au moins 2 caractères</mat-error>
+          </mat-form-field>
+        </div>
 
-    <div class="form-group">
-      <label for="password">Mot de passe</label>
-      <input 
-        type="password" 
-        id="password" 
-        formControlName="password" 
-        class="form-control"
-        [class.is-invalid]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
-      >
-      <div class="invalid-feedback" *ngIf="registerForm.get('password')?.errors?.['required']">
-        Le mot de passe est requis
-      </div>
-      <div class="invalid-feedback" *ngIf="registerForm.get('password')?.errors?.['minlength']">
-        Le mot de passe doit contenir au moins 6 caractères
-      </div>
-    </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" placeholder="exemple@email.com" type="email">
+          <mat-error *ngIf="registerForm.get('email')?.errors?.['required']">L'email est requis</mat-error>
+          <mat-error *ngIf="registerForm.get('email')?.errors?.['email']">Veuillez entrer une adresse email valide</mat-error>
+        </mat-form-field>
 
-    <div class="form-group">
-      <label for="confirmPassword">Confirmer le mot de passe</label>
-      <input 
-        type="password" 
-        id="confirmPassword" 
-        formControlName="confirmPassword" 
-        class="form-control"
-        [class.is-invalid]="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-      >
-      <div class="invalid-feedback" *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">
-        La confirmation du mot de passe est requise
-      </div>
-      <div class="invalid-feedback" *ngIf="registerForm.errors?.['mismatch']">
-        Les mots de passe ne correspondent pas
-      </div>
-    </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Numéro de téléphone</mat-label>
+          <input matInput formControlName="phoneNumber" placeholder="0612345678">
+          <mat-error *ngIf="registerForm.get('phoneNumber')?.errors?.['required']">Le numéro de téléphone est requis</mat-error>
+          <mat-error *ngIf="registerForm.get('phoneNumber')?.errors?.['pattern']">Veuillez entrer un numéro de téléphone valide (10 chiffres)</mat-error>
+        </mat-form-field>
 
-    <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid || loading">
-      {{ loading ? 'Inscription en cours...' : 'S\'inscrire' }}
-    </button>
-  </form>
-  
-  <p class="mt-3">
-    Déjà un compte ? <a routerLink="/auth/login">Se connecter</a>
-  </p>
+        <mat-form-field appearance="outline">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput formControlName="password" type="password" placeholder="Votre mot de passe">
+          <mat-error *ngIf="registerForm.get('password')?.errors?.['required']">Le mot de passe est requis</mat-error>
+          <mat-error *ngIf="registerForm.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 6 caractères</mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Confirmer le mot de passe</mat-label>
+          <input matInput formControlName="confirmPassword" type="password" placeholder="Confirmez votre mot de passe">
+          <mat-error *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">La confirmation du mot de passe est requise</mat-error>
+          <mat-error *ngIf="registerForm.errors?.['mismatch']">Les mots de passe ne correspondent pas</mat-error>
+        </mat-form-field>
+
+        <div class="error-message" *ngIf="error">{{ error }}</div>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid || loading">
+          <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+          <span *ngIf="!loading">S'inscrire</span>
+        </button>
+
+        <div class="login-link">
+          <a routerLink="/auth/login">Déjà inscrit ? Connectez-vous</a>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
 </div> 

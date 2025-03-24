@@ -1,0 +1,57 @@
+.user-management {
+  padding: 20px;
+  background-color: #f5f5f5;
+  min-height: calc(100vh - 64px); // Hauteur de la page moins la navbar
+
+  mat-card {
+    .search-field {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    .error-message {
+      color: #f44336;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .table-container {
+      position: relative;
+      min-height: 200px;
+      overflow: auto;
+
+      table {
+        width: 100%;
+
+        .mat-column-actions {
+          width: 100px;
+          text-align: center;
+        }
+
+        .mat-column-role {
+          width: 150px;
+
+          .role-select {
+            width: 140px;
+            margin: -1em 0;
+          }
+        }
+
+        .mat-row:hover {
+          background-color: #f5f5f5;
+        }
+      }
+    }
+
+    .loading-spinner {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 5px;
+    }
+  }
+} 

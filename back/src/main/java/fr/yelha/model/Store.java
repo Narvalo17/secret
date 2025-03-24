@@ -24,6 +24,9 @@ public class Store {
     @Column(nullable = false)
     private String name;
 
+    @Column(unique = true)
+    private String slug;
+
     @Column(length = 1000)
     private String description;
 

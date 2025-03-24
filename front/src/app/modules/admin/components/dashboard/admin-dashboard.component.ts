@@ -1,19 +1,33 @@
 import { Component, OnInit } from '@angular/core';
-import { StatisticsService, DashboardStatistics } from '@core/services/statistics.service';
-import { StoreService } from '@core/services/store.service';
-import { ProductService } from '@core/services/product.service';
-import { NotificationService } from '@core/services/notification.service';
+import { CommonModule } from '@angular/common';
+import { AdminService } from '../../services/admin.service';
 
-interface LoadingState {
-  statistics: boolean;
-  stores: boolean;
-  products: boolean;
+interface DashboardStatistics {
+  totalSales: number;
+  totalOrders: number;
+  totalCustomers: number;
+  totalProducts: number;
+  recentOrders: Array<{
+    id: number;
+    customerName: string;
+    date: Date;
+    amount: number;
+    status: string;
+  }>;
+  topProducts: Array<{
+    name: string;
+    sales: number;
+    stock: number;
+    price: number;
+  }>;
 }
 
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
-  styleUrls: ['./admin-dashboard.component.scss']
+  styleUrls: ['./admin-dashboard.component.scss'],
+  standalone: true,
+  imports: [CommonModule]
 })
 export class AdminDashboardComponent implements OnInit {
   statistics: DashboardStatistics = {
@@ -21,85 +35,54 @@ export class AdminDashboardComponent implements OnInit {
     totalOrders: 0,
     totalCustomers: 0,
     totalProducts: 0,
-    totalStores: 0,
     recentOrders: [],
     topProducts: []
   };
-  loading: LoadingState = {
-    statistics: true,
-    stores: false,
-    products: false
+  loading = {
+    statistics: false
   };
-  error = false;
+  error: string | null = null;
 
-  recentStores: any[] = [];
-  recentProducts: any[] = [];
-
-  constructor(
-    private statisticsService: StatisticsService,
-    private storeService: StoreService,
-    private productService: ProductService,
-    private notificationService: NotificationService
-  ) {}
+  constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
-    this.loadStatistics();
+    this.loadDashboardData();
   }
 
-  private loadStatistics(): void {
+  loadDashboardData(): void {
     this.loading.statistics = true;
-    this.statisticsService.getDashboardStatistics().subscribe({
-      next: (data: DashboardStatistics) => {
-        this.statistics = data;
-        this.loading.statistics = false;
-      },
-      error: (error: Error) => {
-        console.error('Error loading statistics:', error);
-        this.error = true;
-        this.loading.statistics = false;
-        this.notificationService.error('Erreur lors du chargement des statistiques');
-      }
-    });
-  }
+    this.error = null;
 
-  private loadRecentStores(): void {
-    this.loading.stores = true;
-    this.storeService.getAllStores().subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.recentStores = response.data.slice(0, 5);
-          this.statistics.totalStores = response.data.length;
-        }
-      },
-      error: (error) => {
-        this.notificationService.error('Erreur lors du chargement des magasins récents');
-        console.error('Error loading recent stores:', error);
-      },
-      complete: () => {
-        this.loading.stores = false;
-      }
-    });
-  }
-
-  private loadRecentProducts(): void {
-    this.loading.products = true;
-    this.productService.getAllProducts().subscribe({
-      next: (products) => {
-        this.recentProducts = products.slice(0, 5);
-        this.statistics.totalProducts = products.length;
-      },
-      error: (error) => {
-        this.notificationService.error('Erreur lors du chargement des produits récents');
-        console.error('Error loading recent products:', error);
-      },
-      complete: () => {
-        this.loading.products = false;
-      }
-    });
+    // Simuler le chargement des données pour le moment
+    setTimeout(() => {
+      this.statistics = {
+        totalSales: 15000,
+        totalOrders: 150,
+        totalCustomers: 100,
+        totalProducts: 50,
+        recentOrders: [
+          {
+            id: 1,
+            customerName: 'John Doe',
+            date: new Date(),
+            amount: 150,
+            status: 'Completed'
+          }
+        ],
+        topProducts: [
+          {
+            name: 'Product 1',
+            sales: 100,
+            stock: 50,
+            price: 99.99
+          }
+        ]
+      };
+      this.loading.statistics = false;
+    }, 1000);
   }
 
   refreshData(): void {
-    this.loadStatistics();
-    this.notificationService.success('Données du tableau de bord mises à jour');
+    this.loadDashboardData();
   }
 } 

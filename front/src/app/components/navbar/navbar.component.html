@@ -1,63 +1,77 @@
-<nav class="navbar">
-  <div class="navbar-brand">
-    <a routerLink="/" class="logo">
-      <i class="fas fa-leaf"></i>
-      <span class="logo-text">YELHA</span>
-    </a>
-    <span class="subtitle">Anti-gaspillage alimentaire</span>
-  </div>
-  
-  <div class="navbar-menu" [class.is-active]="isMenuOpen">
-    <a routerLink="/stores" routerLinkActive="active" class="nav-link" [routerLinkActiveOptions]="{exact: false}">
-      <i class="fas fa-store"></i>
-      <span>Magasins</span>
-    </a>
+<div class="navbar-wrapper">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <a routerLink="/" class="logo">
+        <i class="fas fa-leaf"></i>
+        <span class="logo-text">YELHA</span>
+      </a>
+      <span class="subtitle">Anti-gaspillage alimentaire</span>
+    </div>
     
-    <a routerLink="/products" routerLinkActive="active" class="nav-link" [routerLinkActiveOptions]="{exact: false}">
-      <i class="fas fa-box"></i>
-      <span>Produits</span>
-    </a>
-    
-    <a routerLink="/cart" routerLinkActive="active" class="nav-link cart-link" [routerLinkActiveOptions]="{exact: true}">
-      <div class="cart-icon">
-        <i class="fas fa-shopping-cart"></i>
-        <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
-      </div>
-      <span>Panier</span>
-    </a>
-  </div>
+    <div class="navbar-menu" [class.is-active]="isMenuOpen">
+      <a routerLink="/stores" routerLinkActive="active" class="nav-link" [routerLinkActiveOptions]="{exact: false}">
+        <i class="fas fa-store"></i>
+        <span>Magasins</span>
+      </a>
+      
+      <a routerLink="/products" routerLinkActive="active" class="nav-link" [routerLinkActiveOptions]="{exact: false}">
+        <i class="fas fa-box"></i>
+        <span>Produits</span>
+      </a>
+      
+      <a routerLink="/cart" routerLinkActive="active" class="nav-link cart-link" [routerLinkActiveOptions]="{exact: true}">
+        <div class="cart-icon">
+          <i class="fas fa-shopping-cart"></i>
+          <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+        </div>
+        <span>Panier</span>
+      </a>
+    </div>
 
-  <div class="navbar-icons">
-    <div class="user-menu">
-      <button class="user-btn" (click)="toggleUserMenu()">
-        <i class="fas fa-user"></i>
-        <span>Mon Compte</span>
-      </button>
-      <div class="dropdown-menu" *ngIf="isUserMenuOpen">
-        <a routerLink="/profile">
-          <i class="fas fa-user-circle"></i>
-          Mon Profil
-        </a>
-        <a routerLink="/orders">
-          <i class="fas fa-shopping-bag"></i>
-          Mes Commandes
-        </a>
-        <a routerLink="/favorites">
-          <i class="fas fa-heart"></i>
-          Mes Favoris
-        </a>
-        <div class="dropdown-divider"></div>
-        <a (click)="logout()">
-          <i class="fas fa-sign-out-alt"></i>
-          Déconnexion
-        </a>
+    <div class="navbar-icons">
+      <div class="user-menu">
+        <div *ngIf="!isLoggedIn">
+          <a routerLink="/auth/login" class="auth-link">
+            <i class="fas fa-sign-in-alt"></i>
+            Connexion
+          </a>
+          <a routerLink="/auth/register" class="auth-link">
+            <i class="fas fa-user-plus"></i>
+            Inscription
+          </a>
+        </div>
+        <div *ngIf="isLoggedIn">
+          <button class="user-btn" (click)="toggleUserMenu()">
+            <i class="fas fa-user"></i>
+            <span>Mon Compte</span>
+          </button>
+          <div class="dropdown-menu" *ngIf="isUserMenuOpen">
+            <a routerLink="/profile">
+              <i class="fas fa-user-circle"></i>
+              Mon Profil
+            </a>
+            <a routerLink="/orders">
+              <i class="fas fa-shopping-bag"></i>
+              Mes Commandes
+            </a>
+            <a routerLink="/favorites">
+              <i class="fas fa-heart"></i>
+              Mes Favoris
+            </a>
+            <div class="dropdown-divider"></div>
+            <a (click)="logout()">
+              <i class="fas fa-sign-out-alt"></i>
+              Déconnexion
+            </a>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <button class="menu-toggle" (click)="isMenuOpen = !isMenuOpen">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-</nav> 
+    <button class="menu-toggle" (click)="isMenuOpen = !isMenuOpen">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+</div> 

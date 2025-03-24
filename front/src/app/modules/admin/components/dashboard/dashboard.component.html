@@ -1,0 +1,26 @@
+<div class="admin-dashboard">
+  <mat-card class="welcome-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h1>Tableau de bord administrateur</h1>
+      </mat-card-title>
+      <mat-card-subtitle>
+        Bienvenue, {{ adminName }}
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="admin-actions">
+        <button mat-raised-button color="primary" (click)="navigateToUsers()">
+          <mat-icon>people</mat-icon>
+          Gestion des utilisateurs
+        </button>
+
+        <button mat-raised-button color="warn" (click)="logout()">
+          <mat-icon>exit_to_app</mat-icon>
+          Déconnexion
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div> 

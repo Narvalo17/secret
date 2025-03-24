@@ -31,16 +31,16 @@ public class Favorite {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        validateEntity();
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        validateEntity();
     }
 
     // Méthode utilitaire pour vérifier si l'entité est valide
-    @PrePersist
-    @PreUpdate
     protected void validateEntity() {
         if (store == null && product == null) {
             throw new IllegalStateException("Un favori doit être associé soit à un magasin, soit à un produit");

@@ -1,0 +1,54 @@
+<h2 mat-dialog-title>{{ data.mode === 'edit' ? 'Modifier' : 'Créer' }} un utilisateur</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Prénom</mat-label>
+        <input matInput formControlName="firstName" placeholder="Prénom">
+        <mat-error *ngIf="userForm.get('firstName')?.errors?.['required']">Le prénom est requis</mat-error>
+        <mat-error *ngIf="userForm.get('firstName')?.errors?.['minlength']">Le prénom doit contenir au moins 2 caractères</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nom</mat-label>
+        <input matInput formControlName="lastName" placeholder="Nom">
+        <mat-error *ngIf="userForm.get('lastName')?.errors?.['required']">Le nom est requis</mat-error>
+        <mat-error *ngIf="userForm.get('lastName')?.errors?.['minlength']">Le nom doit contenir au moins 2 caractères</mat-error>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="exemple@email.com">
+      <mat-error *ngIf="userForm.get('email')?.errors?.['required']">L'email est requis</mat-error>
+      <mat-error *ngIf="userForm.get('email')?.errors?.['email']">Format d'email invalide</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Téléphone</mat-label>
+      <input matInput formControlName="phoneNumber" placeholder="0612345678">
+      <mat-error *ngIf="userForm.get('phoneNumber')?.errors?.['required']">Le numéro de téléphone est requis</mat-error>
+      <mat-error *ngIf="userForm.get('phoneNumber')?.errors?.['pattern']">Format de téléphone invalide (10 chiffres)</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Rôle</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="USER">Utilisateur</mat-option>
+        <mat-option value="ADMIN">Administrateur</mat-option>
+      </mat-select>
+      <mat-error *ngIf="userForm.get('role')?.errors?.['required']">Le rôle est requis</mat-error>
+    </mat-form-field>
+
+    <div class="error-message" *ngIf="error">{{ error }}</div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Annuler</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="userForm.invalid || loading">
+    <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+    <span *ngIf="!loading">{{ data.mode === 'edit' ? 'Modifier' : 'Créer' }}</span>
+  </button>
+</mat-dialog-actions> 

@@ -1,5 +1,7 @@
 package fr.yelha.dto;
 
+import fr.yelha.model.Category;
+import fr.yelha.model.Store;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -12,7 +14,7 @@ import java.math.BigDecimal;
 public class ProductDto {
     private Long id;
 
-    @NotBlank(message = "Le nom du produit est obligatoire")
+    @NotBlank(message = "Le nom est obligatoire")
     private String name;
 
     private String description;
@@ -21,14 +23,18 @@ public class ProductDto {
     @Positive(message = "Le prix doit être positif")
     private BigDecimal price;
 
-    private String imageUrl;
+    @NotNull(message = "La quantité est obligatoire")
+    @Positive(message = "La quantité doit être positive")
+    private Integer quantity;
+
+    private boolean active = true;
+
+    private Category category;
 
     @NotNull(message = "Le magasin est obligatoire")
-    private Long storeId;
+    private Store store;
 
-    private Long categoryId;
-
-    private boolean isActive;
+    private String imageUrl;
 
     // Statistiques
     private Integer totalSales;

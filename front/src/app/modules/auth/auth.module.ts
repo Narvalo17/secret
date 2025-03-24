@@ -6,14 +6,19 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCardModule } from '@angular/material/card';
 import { SharedModule } from '@shared/shared.module';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { LoginComponent } from '../admin/components/login/login.component';
-import { RegisterComponent } from '../admin/components/register/register.component';
-import { PasswordResetComponent } from '../admin/components/password-reset/password-reset.component';
+import { LoginComponent } from './components/login/login.component';
+import { RegisterComponent } from './components/register/register.component';
+import { PasswordResetComponent } from './components/password-reset/password-reset.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    redirectTo: 'login',
+    pathMatch: 'full'
+  },
   {
     path: 'login',
     component: LoginComponent
@@ -43,7 +48,7 @@ const routes: Routes = [
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    BrowserAnimationsModule,
+    MatCardModule,
     SharedModule
   ]
 })

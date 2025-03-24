@@ -142,9 +142,9 @@ public class ShoppingCartService {
         dto.setProductId(item.getProduct().getId());
         dto.setProductName(item.getProduct().getName());
         dto.setProductImage(item.getProduct().getImageUrl());
-        dto.setProductPrice(item.getProduct().getCurrentPrice());
+        dto.setProductPrice(item.getProduct().getPrice().doubleValue());
         dto.setQuantity(item.getQuantity());
-        dto.setTotalPrice(item.getProduct().getCurrentPrice() * item.getQuantity());
+        dto.setTotalPrice(item.getProduct().getPrice().doubleValue() * item.getQuantity());
         dto.setCreatedAt(item.getCreatedAt());
         dto.setUpdatedAt(item.getUpdatedAt());
         return dto;

@@ -38,9 +38,17 @@ export class RegisterComponent {
     if (this.registerForm.valid) {
       this.loading = true;
       const { firstName, lastName, email, password } = this.registerForm.value;
-      const username = `${firstName} ${lastName}`;
+      
+      const userData = {
+        firstName,
+        lastName,
+        email,
+        password,
+        phoneNumber: '', // Optionnel, à ajouter dans le formulaire si nécessaire
+        emailVerified: false
+      };
 
-      this.authService.register(username, email, password).subscribe({
+      this.authService.register(userData).subscribe({
         next: () => {
           this.notificationService.success('Inscription réussie');
           this.router.navigate(['/admin/login']);

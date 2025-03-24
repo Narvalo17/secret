@@ -2,86 +2,67 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { environment } from '../../../environments/environment';
-import { User, UserResponse } from '../models/user.model';
-import { SessionService } from './session.service';
 
-export interface AuthResponse {
-  token: string;
-  refreshToken: string;
-  expiresIn: number;
-  user: User;
+export interface User {
+  id?: number;
+  email: string;
+  password?: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  emailVerified?: boolean;
+  role?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private apiUrl = 'http://localhost:8081/api';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
-  public currentUser$ = this.currentUserSubject.asObservable();
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+  currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(
-    private http: HttpClient,
-    private sessionService: SessionService
-  ) {
-    if (this.sessionService.isSessionValid()) {
-      this.loadUserProfile().subscribe();
+  constructor(private http: HttpClient) {
+    // Récupérer l'utilisateur du localStorage au démarrage
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+      this.currentUserSubject.next(JSON.parse(savedUser));
     }
   }
 
-  login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, { email, password })
+  login(email: string, password: string): Observable<any> {
+    console.log('🚀 Envoi de la requête de connexion:', `${this.apiUrl}/users/login`);
+    return this.http.post(`${this.apiUrl}/users/login`, { email, password })
       .pipe(
-        tap(response => {
-          this.sessionService.setSession(
-            response.token,
-            response.refreshToken,
-            response.expiresIn
-          );
-          this.currentUserSubject.next(response.user);
+        tap((response: any) => {
+          console.log('✅ Connexion réussie:', response);
+          // Sauvegarder l'utilisateur dans le localStorage
+          localStorage.setItem('currentUser', JSON.stringify(response));
+          this.currentUserSubject.next(response);
         })
       );
   }
 
-  register(username: string, email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/register`, { username, email, password })
+  register(userData: User): Observable<any> {
+    console.log('🚀 Envoi de la requête d\'inscription:', `${this.apiUrl}/users/register`);
+    console.log('📦 Données envoyées:', userData);
+    return this.http.post(`${this.apiUrl}/users/register`, userData)
       .pipe(
-        tap(response => {
-          this.sessionService.setSession(
-            response.token,
-            response.refreshToken,
-            response.expiresIn
-          );
-          this.currentUserSubject.next(response.user);
+        tap((response: any) => {
+          console.log('✅ Inscription réussie:', response);
         })
       );
   }
 
   logout(): void {
-    const refreshToken = this.sessionService.getRefreshToken();
-    if (refreshToken) {
-      this.http.post(`${this.apiUrl}/logout`, { refreshToken }).subscribe();
-    }
-    this.sessionService.clearSession();
+    console.log('🔒 Déconnexion de l\'utilisateur');
+    // Nettoyer le localStorage
+    localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
   }
 
-  refreshToken(refreshToken: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}/refresh-token`, { refreshToken })
-      .pipe(
-        tap(response => {
-          this.sessionService.setSession(
-            response.token,
-            response.refreshToken,
-            response.expiresIn
-          );
-        })
-      );
-  }
-
   isLoggedIn(): boolean {
-    return this.sessionService.isSessionValid();
+    return this.currentUserSubject.value !== null;
   }
 
   isAdmin(): boolean {
@@ -89,49 +70,51 @@ export class AuthService {
     return currentUser?.role === 'ADMIN';
   }
 
-  private loadUserProfile(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/profile`).pipe(
-      tap(user => this.currentUserSubject.next(user))
-    );
-  }
-
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
+  requestPasswordReset(email: string): Observable<any> {
+    console.log('🚀 Recherche de l\'utilisateur par email:', `${this.apiUrl}/users/find-by-email`);
+    console.log('📧 Email recherché:', email);
+    return this.http.post(`${this.apiUrl}/users/find-by-email`, { email })
+      .pipe(
+        tap((user: any) => {
+          if (!user || !user.id) {
+            console.error('❌ Utilisateur non trouvé');
+            throw new Error('Utilisateur non trouvé');
+          }
+          console.log('✅ Utilisateur trouvé:', user);
+        })
+      );
   }
 
-  registerUser(user: User): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${environment.apiUrl}/user/register`, user);
-  }
-
-  loginUser(credentials: { email: string; password: string }): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${environment.apiUrl}/user/login`, credentials);
-  }
-
-  updatePassword(userId: number, passwords: { oldPassword: string; newPassword: string }): Observable<UserResponse> {
-    return this.http.put<UserResponse>(`${environment.apiUrl}/user/reset/password/${userId}`, passwords);
-  }
-
-  createUser(user: User): Observable<UserResponse> {
-    return this.http.post<UserResponse>(`${environment.apiUrl}/user/create`, user);
-  }
-
-  // Nouvelles méthodes pour la réinitialisation du mot de passe
-  requestPasswordReset(email: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/password-reset/request`, { email });
-  }
-
-  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.apiUrl}/password-reset/reset`, {
-      token,
+  resetPassword(userId: number, newPassword: string): Observable<any> {
+    console.log('🚀 Envoi de la requête de réinitialisation du mot de passe:', `${this.apiUrl}/users/${userId}/reset-password`);
+    return this.http.post(`${this.apiUrl}/users/${userId}/reset-password`, {
       newPassword
-    });
+    }).pipe(
+      tap((response: any) => {
+        console.log('✅ Mot de passe réinitialisé avec succès');
+      })
+    );
   }
 
-  validateResetToken(token: string): Observable<{ valid: boolean }> {
-    return this.http.get<{ valid: boolean }>(`${this.apiUrl}/password-reset/validate/${token}`);
+  updatePassword(oldPassword: string, newPassword: string): Observable<any> {
+    const userId = this.currentUserSubject.value?.id;
+    if (!userId) {
+      console.error('❌ Utilisateur non connecté');
+      return new Observable(subscriber => subscriber.error('User not logged in'));
+    }
+    
+    console.log('🚀 Envoi de la requête de mise à jour du mot de passe:', `${this.apiUrl}/users/${userId}/update-password`);
+    return this.http.put(`${this.apiUrl}/users/${userId}/update-password`, {
+      oldPassword,
+      newPassword
+    }).pipe(
+      tap((response: any) => {
+        console.log('✅ Mot de passe mis à jour avec succès');
+      })
+    );
   }
 } 

@@ -1,18 +1,16 @@
 package fr.yelha.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
 @Table(name = "products")
+@Data
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,64 +19,62 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
-    private Double currentPrice;
+    private BigDecimal price;
 
-    private String imageUrl;
+    @Column(nullable = false)
+    private Integer quantity;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private Store store;
+    @Column(nullable = false)
+    private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 
-    private boolean isActive = true;
-    private Integer stockQuantity = 0;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 
     public void updateStock(int quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("La quantité ne peut pas être négative");
         }
-        this.stockQuantity = quantity;
+        this.quantity = quantity;
     }
 
     public void addToStock(int quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("La quantité ne peut pas être négative");
         }
-        this.stockQuantity += quantity;
+        this.quantity += quantity;
     }
 
     public void removeFromStock(int quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("La quantité ne peut pas être négative");
         }
-        if (this.stockQuantity < quantity) {
+        if (this.quantity < quantity) {
             throw new IllegalStateException("Stock insuffisant");
         }
-        this.stockQuantity -= quantity;
+        this.quantity -= quantity;
     }
 
     public boolean isAvailable() {
-        return isActive && stockQuantity > 0;
+        return active && quantity > 0;
     }
 }

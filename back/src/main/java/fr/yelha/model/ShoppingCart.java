@@ -62,7 +62,7 @@ public class ShoppingCart {
 
     public void updateCartTotals() {
         this.totalAmount = items.stream()
-                .mapToDouble(item -> item.getQuantity() * item.getProduct().getCurrentPrice())
+                .mapToDouble(item -> item.getQuantity() * item.getProduct().getPrice().doubleValue())
                 .sum();
         this.totalItems = items.stream()
                 .mapToInt(ShoppingCartDetail::getQuantity)

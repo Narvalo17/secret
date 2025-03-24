@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -10,13 +10,13 @@ import { AuthService } from '../../../../core/services/auth.service';
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  error: string = '';
-  loading: boolean = false;
+  loading = false;
+  error = '';
 
   constructor(
     private fb: FormBuilder,
-    private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -36,7 +36,7 @@ export class LoginComponent {
           this.router.navigate(['/']);
         },
         error: (err) => {
-          this.error = err.error.message || 'Une erreur est survenue lors de la connexion';
+          this.error = err.error?.message || 'Une erreur est survenue lors de la connexion';
           this.loading = false;
         },
         complete: () => {
