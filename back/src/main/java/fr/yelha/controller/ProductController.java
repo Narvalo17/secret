@@ -1,135 +1,76 @@
 package fr.yelha.controller;
 
-import fr.yelha.model.Product;
-import fr.yelha.model.dto.FilterProductDto;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
+import fr.yelha.dto.ProductDto;
+import fr.yelha.service.ProductService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-@Slf4j
 @RestController
-@RequestMapping("admin/product")
+@RequestMapping("/api/products")
+@RequiredArgsConstructor
 public class ProductController {
+    private final ProductService productService;
 
-    @Operation(summary = "Add a Product", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product added"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PostMapping(value = "/")
-    @ResponseBody
-    public ResponseEntity<String> saveProduct(
-            @Valid @RequestBody Product Product,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Product Service[post] : saveProduct");
-
-        return ResponseEntity.ok()
-                .body("");
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STORE_OWNER')")
+    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto, Authentication authentication) {
+        return ResponseEntity.ok(productService.createProduct(productDto, Long.parseLong(authentication.getName())));
     }
 
-    @Operation(summary = "Update a Product", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product updated"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PutMapping(value = "/{id}")
-    @ResponseBody
-    public ResponseEntity<String> updateProduct(
-            @PathVariable int id,
-            @Valid @RequestBody Product Product,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Product Service[put] : updateProduct");
-
-        return ResponseEntity.ok()
-                .body("");
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @productService.isProductOwner(#id, authentication.principal.id)")
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable Long id, @RequestBody ProductDto productDto) {
+        return ResponseEntity.ok(productService.updateProduct(id, productDto));
     }
 
-    @Operation(summary = "Delete a Product", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product deleted"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @DeleteMapping(value = "/{id}")
-    @ResponseBody
-    public ResponseEntity<String> deleteProduct(
-            @PathVariable int id,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Product Service[delete] : deleteProduct");
-
-        return ResponseEntity.ok()
-                .body("");
+    @GetMapping("/{id}")
+    public ResponseEntity<ProductDto> getProduct(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getProductById(id));
     }
 
-    @Operation(summary = "delete a list of Products", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Products deleted"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @DeleteMapping(value = "/products")
-    @ResponseBody
-    public ResponseEntity<String> deleteProducts(
-            @Valid @RequestParam(value = "ids", required = true) List<Integer> idsProduct,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Product Service[delete] : deleteProducts");
-
-        return ResponseEntity.ok()
-                .body("");
+    @GetMapping
+    public ResponseEntity<Page<ProductDto>> getAllProducts(Pageable pageable) {
+        return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
-    @Operation(summary = "Get list Product by Store", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product list"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @GetMapping(value = "/products/{id}")
-    @ResponseBody
-    public ResponseEntity<List<Product>> getProductListByStore(@PathVariable int id,
-                                                                    @RequestHeader HttpHeaders headers, BearerTokenAuthentication authentication) {
-        log.debug("Product Service[get] : getProductListByStore");
-
-        return ResponseEntity.ok().body(List.of(new Product()));
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<Page<ProductDto>> getProductsByStore(@PathVariable Long storeId, Pageable pageable) {
+        return ResponseEntity.ok(productService.getProductsByStore(storeId, pageable));
     }
 
-    @Operation(summary = "Get Product by ID", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @GetMapping(value = "/{id}")
-    @ResponseBody
-    public ResponseEntity<Product> getById(@PathVariable int id, @RequestHeader HttpHeaders headers,
-                                           BearerTokenAuthentication authentication) {
-        log.debug("Product Service[get] : getById");
-
-        return ResponseEntity.ok().body(new Product());
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Page<ProductDto>> getProductsByCategory(@PathVariable Long categoryId, Pageable pageable) {
+        return ResponseEntity.ok(productService.getProductsByCategory(categoryId.toString(), pageable));
     }
 
-    @Operation(summary = "Clone a Product", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product cloned"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PostMapping(value = "/clone/{id}")
-    @ResponseBody
-    public ResponseEntity<String> cloneProduct(@PathVariable int id,
-                                               @RequestHeader HttpHeaders headers, BearerTokenAuthentication authentication) {
-        log.debug("Product Service[Post] : cloneProduct");
-
-        return ResponseEntity.ok().body("");
+    @GetMapping("/search")
+    public ResponseEntity<Page<ProductDto>> searchProducts(@RequestParam String query, Pageable pageable) {
+        return ResponseEntity.ok(productService.searchProducts(query, pageable));
     }
 
-    @Operation(summary = "Get Product list using filters", tags = {"Manage Product"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product list"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PostMapping(value = "/filters")
-    @ResponseBody
-    public ResponseEntity<List<Product>> getByFilters(
-            @RequestBody List<FilterProductDto> filterProductDtos,
-            @RequestParam(required = false, defaultValue = "20", name = "size") String size,
-            @RequestParam(required = false, defaultValue = "0", name = "page") String page,
-            @RequestParam(required = false, defaultValue = "id,desc", name = "sort") String sort,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Product Service[post] : get by filters");
+    @GetMapping("/store/{storeId}/search")
+    public ResponseEntity<Page<ProductDto>> searchProductsByStore(
+            @PathVariable Long storeId,
+            @RequestParam String query,
+            Pageable pageable) {
+        return ResponseEntity.ok(productService.searchProductsByStore(storeId, query, pageable));
+    }
 
-        return ResponseEntity.ok()
-                .body(List.of(new Product()));
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @productService.isProductOwner(#id, authentication.principal.id)")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.deleteProduct(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN') or @productService.isProductOwner(#id, authentication.principal.id)")
+    public ResponseEntity<ProductDto> updateProductStatus(@PathVariable Long id, @RequestParam boolean isActive) {
+        return ResponseEntity.ok(productService.updateProductStatus(id, isActive));
     }
 }

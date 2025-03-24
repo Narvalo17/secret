@@ -1,60 +1,66 @@
 package fr.yelha.controller;
 
-import fr.yelha.model.ShoppingCart;
-import fr.yelha.model.ShoppingcartDetail;
+import fr.yelha.dto.ShoppingCartDetailDto;
+import fr.yelha.dto.ShoppingCartDto;
+import fr.yelha.service.ShoppingCartService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/shopping")
+@RequestMapping("/api/shopping")
+@RequiredArgsConstructor
+@Tag(name = "Shopping", description = "API de gestion des achats")
 public class ShoppingController {
+    private final ShoppingCartService shoppingCartService;
 
-    @Operation(summary = "Add a product to shopping cart", tags = {"Shopping"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product added"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PostMapping(value = "/")
-    @ResponseBody
-    public ResponseEntity<String> saveShoppingCartDetail(
-            @Valid @RequestBody ShoppingcartDetail shoppingcartdetail,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Shopping Service[post] : saveShoppingCartDetail");
-
-        return ResponseEntity.ok()
-                .body("");
+    @Operation(summary = "Ajouter un produit au panier", description = "Ajout d'un produit au panier d'achat")
+    @ApiResponse(responseCode = "200", description = "Produit ajouté avec succès")
+    @ApiResponse(responseCode = "400", description = "Données invalides")
+    @ApiResponse(responseCode = "401", description = "Non autorisé")
+    @ApiResponse(responseCode = "404", description = "Produit non trouvé")
+    @PostMapping("/cart/items")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ShoppingCartDto> addItemToCart(
+            @Valid @RequestBody ShoppingCartDetailDto detail,
+            Authentication authentication) {
+        log.debug("Shopping Service[post] : addItemToCart");
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(shoppingCartService.addItemToCart(userId, detail.getProductId(), detail.getQuantity()));
     }
 
-    @Operation(summary = "Delete a product from a Shopping cart", tags = {"Shopping"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Product deleted"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @DeleteMapping(value = "/{idProduct}")
-    @ResponseBody
-    public ResponseEntity<String> deleteShoppingCartDetails(
-            @PathVariable int idProduct,
-            @RequestHeader HttpHeaders headers,
-            BearerTokenAuthentication authentication) {
-        log.debug("Shopping Service[delete] : deleteShoppingCartDetails");
-
-        return ResponseEntity.ok()
-                .body("");
+    @Operation(summary = "Supprimer un produit du panier", description = "Suppression d'un produit du panier d'achat")
+    @ApiResponse(responseCode = "200", description = "Produit supprimé avec succès")
+    @ApiResponse(responseCode = "401", description = "Non autorisé")
+    @ApiResponse(responseCode = "404", description = "Produit non trouvé dans le panier")
+    @DeleteMapping("/cart/items/{productId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ShoppingCartDto> removeItemFromCart(
+            @Parameter(description = "ID du produit à supprimer") @PathVariable Long productId,
+            Authentication authentication) {
+        log.debug("Shopping Service[delete] : removeItemFromCart");
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(shoppingCartService.removeItemFromCart(userId, productId));
     }
 
-    @Operation(summary = "Get ShoppingCart", tags = {"Shopping"}, responses = {
-            @ApiResponse(responseCode = "200", description = "shopping cart"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @GetMapping(value = "/")
-    @ResponseBody
-    public ResponseEntity<ShoppingCart> getShoppingCart(@RequestHeader HttpHeaders headers, BearerTokenAuthentication authentication) {
+    @Operation(summary = "Obtenir le panier", description = "Récupération du panier d'achat de l'utilisateur")
+    @ApiResponse(responseCode = "200", description = "Panier récupéré avec succès")
+    @ApiResponse(responseCode = "401", description = "Non autorisé")
+    @ApiResponse(responseCode = "404", description = "Panier non trouvé")
+    @GetMapping("/cart")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<ShoppingCartDto> getShoppingCart(Authentication authentication) {
         log.debug("Shopping Service[get] : getShoppingCart");
-
-        return ResponseEntity.ok().body(new ShoppingCart());
+        Long userId = Long.parseLong(authentication.getName());
+        return ResponseEntity.ok(shoppingCartService.getCartByUser(userId));
     }
-
 }

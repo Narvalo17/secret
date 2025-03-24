@@ -1,77 +1,63 @@
 package fr.yelha.controller;
 
-import fr.yelha.model.Store;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import jakarta.validation.Valid;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
+import fr.yelha.dto.StoreDto;
+import fr.yelha.service.StoreService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.BearerTokenAuthentication;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-@Slf4j
 @RestController
-@RequestMapping("/admin/store")
+@RequestMapping("/api/stores")
+@RequiredArgsConstructor
 public class StoreController {
+    private final StoreService storeService;
 
-    @Operation(summary = "Create a Store", tags = {"Manage Store"}, responses = {
-            @ApiResponse(responseCode = "201", description = "Store created"),
-            @ApiResponse(responseCode = "400", description = "Données invalides"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PostMapping(value = "/")
-    @ResponseBody
-    public ResponseEntity<String> createStore(
-            @Valid @RequestBody Store store,
-            @RequestHeader HttpHeaders headers, BearerTokenAuthentication authentication) {
-        log.debug("Store Service[post] : saveStore");
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body("");
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN') or hasRole('STORE_OWNER')")
+    public ResponseEntity<StoreDto> createStore(@RequestBody StoreDto storeDto, Authentication authentication) {
+        return ResponseEntity.ok(storeService.createStore(storeDto, Long.parseLong(authentication.getName())));
     }
 
-    @Operation(summary = "Update a Store", tags = {"Manage Store"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Store updated"),
-            @ApiResponse(responseCode = "400", description = "Données invalides"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @PutMapping(value = "/{id}")
-    @ResponseBody
-    public ResponseEntity<String> updateStore(
-            @PathVariable int id,
-            @Valid @RequestBody Store store,
-            @RequestHeader HttpHeaders headers, BearerTokenAuthentication authentication) {
-        log.debug("Store Service[put] : updateStore");
-
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @storeService.isStoreOwner(#id, authentication.principal.id)")
+    public ResponseEntity<StoreDto> updateStore(@PathVariable Long id, @RequestBody StoreDto storeDto) {
+        return ResponseEntity.ok(storeService.updateStore(id, storeDto));
     }
 
-    @ResponseBody
-    @Operation(summary = "Get list of Stores", tags = {"Manage Store"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Store list"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @GetMapping(value = "/stores")
-    public ResponseEntity<List<Store>> getListStores(@RequestHeader HttpHeaders headers,
-                                                          BearerTokenAuthentication authentication) {
-
-        log.debug("Store Service[get] : getListStores");
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(List.of(new Store()));
+    @GetMapping("/{id}")
+    public ResponseEntity<StoreDto> getStore(@PathVariable Long id) {
+        return ResponseEntity.ok(storeService.getStoreById(id));
     }
 
-    @ResponseBody
-    @Operation(summary = "Delete a Store", tags = {"Manage Store"}, responses = {
-            @ApiResponse(responseCode = "200", description = "Store deleted"),
-            @ApiResponse(responseCode = "400", description = "Données invalides"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized")})
-    @DeleteMapping(value = "/{id}")
-    public ResponseEntity<String> deleteStore(@PathVariable int id,
-                                                   @RequestHeader HttpHeaders headers,
-                                                   BearerTokenAuthentication authentication) {
-        log.debug("Store Service[delete] : deleteStore");
+    @GetMapping
+    public ResponseEntity<Page<StoreDto>> getAllStores(Pageable pageable) {
+        return ResponseEntity.ok(storeService.getAllStores(pageable));
+    }
 
-        return ResponseEntity.status(HttpStatus.OK).body("");
+    @GetMapping("/search")
+    public ResponseEntity<Page<StoreDto>> searchStores(@RequestParam String query, Pageable pageable) {
+        return ResponseEntity.ok(storeService.searchStores(query, pageable));
+    }
+
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<Page<StoreDto>> getStoresByCategory(@PathVariable Long categoryId, Pageable pageable) {
+        return ResponseEntity.ok(storeService.getStoresByCategory(categoryId.toString(), pageable));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or @storeService.isStoreOwner(#id, authentication.principal.id)")
+    public ResponseEntity<Void> deleteStore(@PathVariable Long id) {
+        storeService.deleteStore(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<StoreDto> updateStoreStatus(@PathVariable Long id, @RequestParam boolean isActive) {
+        return ResponseEntity.ok(storeService.updateStoreStatus(id, isActive));
     }
 }
