@@ -1,114 +1,107 @@
 <div class="admin-dashboard">
-  <header class="dashboard-header">
-    <h1>Tableau de bord administrateur</h1>
+  <div class="dashboard-header">
+    <h1>Tableau de bord</h1>
     <button class="refresh-btn" (click)="refreshData()">
       <i class="fas fa-sync-alt"></i> Actualiser
     </button>
-  </header>
+  </div>
 
-  <div class="stats-grid">
-    <div class="stat-card">
-      <div class="stat-icon">
+  <div class="loading-spinner" *ngIf="loading.statistics">
+    <i class="fas fa-spinner fa-spin"></i> Chargement des données...
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i>
+    Une erreur est survenue lors du chargement des données
+  </div>
+
+  <div class="dashboard-content" *ngIf="!loading.statistics && !error">
+    <div class="stats-grid">
+      <div class="stat-card">
         <i class="fas fa-euro-sign"></i>
-      </div>
-      <div class="stat-content">
         <h3>Ventes totales</h3>
         <p class="stat-value">{{ statistics.totalSales | currency:'EUR' }}</p>
       </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-store"></i>
+      <div class="stat-card">
+        <i class="fas fa-shopping-cart"></i>
+        <h3>Commandes</h3>
+        <p class="stat-value">{{ statistics.totalOrders }}</p>
       </div>
-      <div class="stat-content">
-        <h3>Magasins</h3>
-        <p class="stat-value">{{ statistics.totalStores }}</p>
-      </div>
-    </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">
+      <div class="stat-card">
+        <i class="fas fa-users"></i>
+        <h3>Clients</h3>
+        <p class="stat-value">{{ statistics.totalCustomers }}</p>
+      </div>
+
+      <div class="stat-card">
         <i class="fas fa-box"></i>
-      </div>
-      <div class="stat-content">
         <h3>Produits</h3>
         <p class="stat-value">{{ statistics.totalProducts }}</p>
       </div>
     </div>
 
-    <div class="stat-card">
-      <div class="stat-icon">
-        <i class="fas fa-shopping-cart"></i>
-      </div>
-      <div class="stat-content">
-        <h3>Panier moyen</h3>
-        <p class="stat-value">{{ statistics.averageOrderValue | currency:'EUR' }}</p>
-      </div>
-    </div>
-  </div>
+    <div class="data-sections">
+      <section class="recent-orders">
+        <h2>Commandes récentes</h2>
+        <div class="table-container">
+          <table *ngIf="statistics.recentOrders.length > 0">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Client</th>
+                <th>Date</th>
+                <th>Montant</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let order of statistics.recentOrders">
+                <td>#{{ order.id }}</td>
+                <td>{{ order.customerName }}</td>
+                <td>{{ order.date | date:'short' }}</td>
+                <td>{{ order.amount | currency:'EUR' }}</td>
+                <td>
+                  <span [class]="'status-' + order.status.toLowerCase()">
+                    {{ order.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="statistics.recentOrders.length === 0" class="no-data">
+            Aucune commande récente
+          </p>
+        </div>
+      </section>
 
-  <div class="dashboard-content">
-    <div class="recent-section">
-      <h2>Magasins récents</h2>
-      <div class="loading-spinner" *ngIf="loading.stores">
-        <i class="fas fa-spinner fa-spin"></i>
-      </div>
-      <div class="table-container" *ngIf="!loading.stores">
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Localisation</th>
-              <th>Catégorie</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let store of recentStores">
-              <td>{{ store.name }}</td>
-              <td>{{ store.location }}</td>
-              <td>{{ store.category }}</td>
-              <td>
-                <button class="btn-icon" [routerLink]="['/admin/stores', store.id]">
-                  <i class="fas fa-edit"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="recent-section">
-      <h2>Produits récents</h2>
-      <div class="loading-spinner" *ngIf="loading.products">
-        <i class="fas fa-spinner fa-spin"></i>
-      </div>
-      <div class="table-container" *ngIf="!loading.products">
-        <table>
-          <thead>
-            <tr>
-              <th>Nom</th>
-              <th>Prix</th>
-              <th>Stock</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let product of recentProducts">
-              <td>{{ product.name }}</td>
-              <td>{{ product.price | currency:'EUR' }}</td>
-              <td>{{ product.quantity }}</td>
-              <td>
-                <button class="btn-icon" [routerLink]="['/admin/products', product.id]">
-                  <i class="fas fa-edit"></i>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <section class="top-products">
+        <h2>Produits populaires</h2>
+        <div class="table-container">
+          <table *ngIf="statistics.topProducts.length > 0">
+            <thead>
+              <tr>
+                <th>Produit</th>
+                <th>Ventes</th>
+                <th>Stock</th>
+                <th>Prix</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let product of statistics.topProducts">
+                <td>{{ product.name }}</td>
+                <td>{{ product.sales }}</td>
+                <td>{{ product.stock }}</td>
+                <td>{{ product.price | currency:'EUR' }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p *ngIf="statistics.topProducts.length === 0" class="no-data">
+            Aucun produit à afficher
+          </p>
+        </div>
+      </section>
     </div>
   </div>
 </div> 

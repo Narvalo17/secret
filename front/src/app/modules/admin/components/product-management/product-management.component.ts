@@ -275,8 +275,9 @@ export class ProductManagementComponent implements OnInit {
     }
   }
 
-  getStoreName(storeId: number): string {
-    const store = this.stores.find(s => s.id === storeId);
+  getStoreName(storeId: number | undefined): string {
+    if (!storeId) return 'Magasin non assigné';
+    const store = this.stores.find((s: Store) => s.id === storeId);
     return store ? store.name : 'Magasin inconnu';
   }
 

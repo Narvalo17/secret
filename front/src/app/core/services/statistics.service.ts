@@ -1,44 +1,68 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { environment } from '@env/environment';
 
-export interface StoreStatistics {
+export interface StatisticsFilters {
+  startDate?: string;
+  endDate?: string;
+  storeId?: number;
+}
+
+export interface Statistics {
   totalSales: number;
-  averageOrderValue: number;
-  topProducts: {
-    productId: number;
-    name: string;
+  totalProducts: number;
+  activeStores: number;
+  newCustomers: number;
+  salesData: {
+    date: string;
+    amount: number;
+  }[];
+  productData: {
+    category: string;
     quantity: number;
-    revenue: number;
   }[];
-  salesByPeriod: {
-    period: string;
-    sales: number;
-  }[];
+}
+
+export interface DashboardStatistics {
+  totalSales: number;
+  totalOrders: number;
+  totalCustomers: number;
+  totalProducts: number;
+  totalStores: number;
+  recentOrders: any[];
+  topProducts: any[];
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class StatisticsService {
-  private readonly apiUrl = 'api/admin/statistic';
+  private apiUrl = `${environment.apiUrl}/admin/statistic`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  getAllStatistics(): Observable<StoreStatistics[]> {
-    return this.http.get<StoreStatistics[]>(`${this.apiUrl}/all`);
+  getAllStatistics(filters?: StatisticsFilters): Observable<Statistics> {
+    return this.http.get<Statistics>(`${this.apiUrl}/all`, { params: { ...filters } });
   }
 
-  getStoreStatistics(storeId: number): Observable<StoreStatistics> {
-    return this.http.get<StoreStatistics>(`${this.apiUrl}/store/${storeId}`);
+  exportStatistics(filters?: StatisticsFilters): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export`, {
+      params: { ...filters },
+      responseType: 'blob'
+    });
   }
 
-  getStatisticsByDateRange(startDate: Date, endDate: Date): Observable<StoreStatistics[]> {
-    return this.http.get<StoreStatistics[]>(`${this.apiUrl}/range`, {
-      params: {
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
-      }
+  getDashboardStatistics(): Observable<DashboardStatistics> {
+    // Mock data for now
+    return of({
+      totalSales: 150000,
+      totalOrders: 250,
+      totalCustomers: 120,
+      totalProducts: 45,
+      totalStores: 8,
+      recentOrders: [],
+      topProducts: []
     });
   }
 } 

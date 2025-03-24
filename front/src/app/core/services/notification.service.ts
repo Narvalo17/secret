@@ -3,33 +3,34 @@ import { Subject } from 'rxjs';
 
 export interface Notification {
   message: string;
-  type: 'success' | 'error' | 'info';
-  duration?: number;
+  type: 'success' | 'error' | 'warning' | 'info';
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotificationService {
-  private notificationSubject = new Subject<Notification>();
-  notifications$ = this.notificationSubject.asObservable();
+  private notifications = new Subject<Notification>();
 
-  show(notification: Notification) {
-    this.notificationSubject.next({
-      duration: 3000,
-      ...notification
-    });
+  constructor() {}
+
+  getNotifications() {
+    return this.notifications.asObservable();
   }
 
-  success(message: string, duration = 3000) {
-    this.show({ message, type: 'success', duration });
+  success(message: string) {
+    this.notifications.next({ message, type: 'success' });
   }
 
-  error(message: string, duration = 3000) {
-    this.show({ message, type: 'error', duration });
+  error(message: string) {
+    this.notifications.next({ message, type: 'error' });
   }
 
-  info(message: string, duration = 3000) {
-    this.show({ message, type: 'info', duration });
+  warning(message: string) {
+    this.notifications.next({ message, type: 'warning' });
+  }
+
+  info(message: string) {
+    this.notifications.next({ message, type: 'info' });
   }
 } 

@@ -1,70 +1,76 @@
-<div class="store-detail" *ngIf="store">
+<div class="store-detail-container" *ngIf="store">
   <div class="store-header">
-    <div class="store-banner" [style.backgroundImage]="store.imageUrl ? 'url(' + store.imageUrl + ')' : 'url(/assets/images/default-store.jpg)'">
-      <div class="store-info">
-        <h1>{{ store.name }}</h1>
-        <div class="store-meta">
-          <div class="meta-item" *ngIf="store.rating">
-            <span class="rating">
-              <i class="fas fa-star"></i> {{ store.rating }}
+    <div class="store-info">
+      <h1>{{ store.name }}</h1>
+      <div class="store-meta">
+        <span class="location">
+          <i class="fas fa-map-marker-alt"></i> {{ store.address }}
+        </span>
+        <span class="category">
+          <i class="fas fa-store"></i> {{ store.category }}
+        </span>
+      </div>
+      <p class="description">{{ store.description }}</p>
+      <div class="contact-info">
+        <p><i class="fas fa-phone"></i> {{ store.phone }}</p>
+        <p><i class="fas fa-envelope"></i> {{ store.email }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="products-section">
+    <h2>Nos produits</h2>
+    
+    <div class="products-grid" *ngIf="products && products.length > 0">
+      <div class="product-card" *ngFor="let product of products">
+        <div class="product-image">
+          <img [src]="product.imageUrl || 'assets/images/placeholder.jpg'" [alt]="product.name">
+          <div class="discount-badge" *ngIf="product.discountPercentage > 0">
+            -{{ product.discountPercentage }}%
+          </div>
+        </div>
+        <div class="product-info">
+          <h3>{{ product.name }}</h3>
+          <p class="description">{{ product.description }}</p>
+          <div class="price-info">
+            <p class="original-price" *ngIf="product.discountPercentage > 0">
+              {{ product.originalPrice | currency:'EUR' }}
+            </p>
+            <p class="current-price">{{ product.currentPrice | currency:'EUR' }}</p>
+          </div>
+          <div class="stock-info">
+            <span [class.low-stock]="product.stock < 5">
+              Stock: {{ product.stock }}
             </span>
           </div>
-          <div class="meta-item location">
-            <i class="fas fa-map-marker-alt"></i>
-            <div class="address">
-              <span>{{ store.address }}</span>
-            </div>
+        </div>
+        <div class="product-actions">
+          <div class="quantity-selector">
+            <button (click)="decrementQuantity(product)" [disabled]="product.selectedQuantity <= 1">-</button>
+            <input type="number" [(ngModel)]="product.selectedQuantity" min="1" [max]="product.stock">
+            <button (click)="incrementQuantity(product)" [disabled]="product.selectedQuantity >= product.stock">+</button>
           </div>
-          <button class="btn-favorite" (click)="toggleFavorite()">
-            <i class="fas" [class.fa-heart]="store.isFavorite" [class.fa-heart-o]="!store.isFavorite"></i>
-            {{ store.isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+          <button class="add-to-cart" (click)="addToCart(product)" [disabled]="product.stock === 0">
+            <i class="fas fa-cart-plus"></i> Ajouter au panier
           </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="store-content">
-    <div class="store-section">
-      <h2>Description</h2>
-      <p>{{ store.description }}</p>
-    </div>
-
-    <div class="store-section">
-      <h2>Horaires d'ouverture</h2>
-      <p>{{ store.openingHours }}</p>
-    </div>
-
-    <div class="store-section">
-      <h2>Contact</h2>
-      <div class="contact-info">
-        <div class="contact-item">
-          <i class="fas fa-envelope"></i>
-          <p>{{ store.email || 'Non spécifié' }}</p>
-        </div>
-        <div class="contact-item">
-          <i class="fas fa-phone"></i>
-          <p>{{ store.phone || 'Non spécifié' }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="store-section">
-      <h2>Informations supplémentaires</h2>
-      <div class="additional-info">
-        <p>{{ store.additionalInfo || 'Aucune information supplémentaire' }}</p>
-      </div>
+    <div class="no-products" *ngIf="!products || products.length === 0">
+      <p>Aucun produit disponible pour le moment.</p>
     </div>
   </div>
 </div>
 
-<div class="loading-spinner" *ngIf="!store">
-  <i class="fas fa-spinner fa-spin"></i>
-  <span>Chargement du magasin...</span>
+<div class="loading-container" *ngIf="loading">
+  <mat-spinner></mat-spinner>
+  <p>Chargement du magasin...</p>
 </div>
 
-<div class="error-message" *ngIf="error">
-  <i class="fas fa-exclamation-circle"></i>
-  <p>{{ error }}</p>
-  <button routerLink="/stores">Retour aux magasins</button>
+<div class="error-container" *ngIf="error">
+  <p>Une erreur est survenue lors du chargement des données</p>
+  <button mat-raised-button color="primary" routerLink="/stores">
+    Retour aux magasins
+  </button>
 </div> 

@@ -200,7 +200,7 @@
             </div>
             <p><i class="fas fa-box"></i> Stock: {{ product.quantity }}</p>
             <p><i class="fas fa-tag"></i> {{ product.category }}</p>
-            <p><i class="fas fa-store"></i> {{ getStoreName(product.storeId) }}</p>
+            <p><i class="fas fa-store"></i> {{ product.storeId ? getStoreName(product.storeId) : 'Magasin non assigné' }}</p>
           </div>
         </div>
       </div>

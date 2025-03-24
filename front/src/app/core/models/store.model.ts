@@ -1,3 +1,5 @@
+import { Product } from './product.model';
+
 export interface Store {
   id: number;
   name: string;
@@ -8,8 +10,8 @@ export interface Store {
   openingHours: string;
   contactEmail: string;
   contactPhone: string;
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   imageUrl?: string;
   rating?: number;
   distance?: number;
@@ -17,6 +19,7 @@ export interface Store {
   additionalInfo?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  products: Product[];
 }
 
 export interface StoreResponse {

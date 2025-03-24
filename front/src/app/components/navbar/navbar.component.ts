@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
-import { CartService } from '../../core/services/cart.service';
+import { AuthService } from '@core/services/auth.service';
+import { CartService } from '@core/services/cart.service';
 import { Subscription } from 'rxjs';
+import { Cart } from '@core/models/cart.model';
 
 @Component({
   selector: 'app-navbar',
@@ -14,21 +15,21 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isUserMenuOpen = false;
   isAuthenticated = false;
   cartItemCount = 0;
-  private cartSubscription: Subscription;
+  private cartSubscription: Subscription | undefined;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private cartService: CartService
-  ) {
-    this.cartSubscription = this.cartService.cart$.subscribe(cart => {
-      this.cartItemCount = cart.items.reduce((count, item) => count + item.quantity, 0);
-    });
-  }
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.isAuthenticated = !!user;
+    });
+
+    this.cartSubscription = this.cartService.getCart().subscribe((cart: Cart) => {
+      this.cartItemCount = cart.items.reduce((count: number, item) => count + item.quantity, 0);
     });
   }
 

@@ -1,7 +1,7 @@
 export interface Product {
   id: number;
   name: string;
-  description?: string;
+  description: string;
   originalPrice: number;
   discountPercentage: number;
   currentPrice: number;
@@ -9,10 +9,11 @@ export interface Product {
   price: number;
   stock: number;
   imageUrl: string;
-  storeId: number;
   category: string;
-  createdAt: Date;
-  updatedAt: Date;
+  storeId?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+  selectedQuantity?: number;
 }
 
 export interface ProductFilter {

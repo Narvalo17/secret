@@ -1,0 +1,96 @@
+<div class="statistics-container">
+  <div class="header">
+    <h2>Tableau de bord des statistiques</h2>
+    <button class="export-btn" (click)="exportData()">
+      <i class="fas fa-download"></i> Exporter les données
+    </button>
+  </div>
+
+  <div class="filters-section">
+    <form [formGroup]="filterForm" class="filters-form">
+      <div class="date-range">
+        <mat-form-field>
+          <mat-label>Date de début</mat-label>
+          <input matInput [matDatepicker]="startPicker" formControlName="startDate">
+          <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+          <mat-datepicker #startPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Date de fin</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="endDate">
+          <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>Magasin</mat-label>
+          <mat-select formControlName="storeId">
+            <mat-option [value]="">Tous les magasins</mat-option>
+            <!-- TODO: Ajouter les options des magasins dynamiquement -->
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+
+  <div class="statistics-content" *ngIf="!loading; else loadingTemplate">
+    <div class="kpi-cards">
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <i class="fas fa-shopping-cart"></i>
+        </div>
+        <div class="kpi-data">
+          <h3>Ventes totales</h3>
+          <p>{{ statistics?.totalSales || 0 }} €</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <i class="fas fa-box"></i>
+        </div>
+        <div class="kpi-data">
+          <h3>Produits vendus</h3>
+          <p>{{ statistics?.totalProducts || 0 }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <i class="fas fa-store"></i>
+        </div>
+        <div class="kpi-data">
+          <h3>Magasins actifs</h3>
+          <p>{{ statistics?.activeStores || 0 }}</p>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-icon">
+          <i class="fas fa-users"></i>
+        </div>
+        <div class="kpi-data">
+          <h3>Nouveaux clients</h3>
+          <p>{{ statistics?.newCustomers || 0 }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-container">
+      <div class="chart-wrapper">
+        <canvas id="salesChart"></canvas>
+      </div>
+      <div class="chart-wrapper">
+        <canvas id="productsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loadingTemplate>
+    <div class="loading-container">
+      <mat-spinner></mat-spinner>
+      <p>Chargement des statistiques...</p>
+    </div>
+  </ng-template>
+</div> 

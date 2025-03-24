@@ -1,8 +1,16 @@
 import { Product } from './product.model';
 
 export interface CartItem {
-  product: Product;
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  discountPercentage: number;
   quantity: number;
+  imageUrl: string;
+  storeId: string;
+  storeName: string;
 }
 
 export interface Cart {
