@@ -24,11 +24,6 @@ public class UserDto {
     private String phoneNumber;
     private boolean active;
     private boolean emailVerified;
-
-    private String street;
-    private String city;
-    private String postalCode;
-
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

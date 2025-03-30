@@ -24,10 +24,6 @@ public class User {
     private boolean active = true;
     private boolean emailVerified = false;
 
-    private String street;
-    private String city;
-    private String postalCode;
-
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

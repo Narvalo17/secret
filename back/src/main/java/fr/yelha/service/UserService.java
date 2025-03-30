@@ -107,9 +107,6 @@ public class UserService {
         user.setLastName(dto.getLastName());
         user.setPhoneNumber(dto.getPhoneNumber());
         user.setActive(dto.isActive());
-        user.setStreet(dto.getStreet());
-        user.setCity(dto.getCity());
-        user.setPostalCode(dto.getPostalCode());
     }
 
     private UserDto convertToDto(User user) {
@@ -121,9 +118,6 @@ public class UserService {
         dto.setPhoneNumber(user.getPhoneNumber());
         dto.setActive(user.isActive());
         dto.setEmailVerified(user.isEmailVerified());
-        dto.setStreet(user.getStreet());
-        dto.setCity(user.getCity());
-        dto.setPostalCode(user.getPostalCode());
         dto.setLastLogin(user.getLastLogin());
         dto.setCreatedAt(user.getCreatedAt());
         dto.setUpdatedAt(user.getUpdatedAt());
