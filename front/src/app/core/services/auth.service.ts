@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 export interface User {
   id?: number;
@@ -22,7 +23,10 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
     // Récupérer l'utilisateur du localStorage au démarrage
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -39,6 +43,8 @@ export class AuthService {
           // Sauvegarder l'utilisateur dans le localStorage
           localStorage.setItem('currentUser', JSON.stringify(response));
           this.currentUserSubject.next(response);
+          // Rediriger vers la page d'accueil
+          this.router.navigate(['/']);
         })
       );
   }
@@ -61,7 +67,7 @@ export class AuthService {
     this.currentUserSubject.next(null);
   }
 
-  isLoggedIn(): boolean {
+  isAuthenticated(): boolean {
     return this.currentUserSubject.value !== null;
   }
 
@@ -72,6 +78,11 @@ export class AuthService {
 
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  updateCurrentUser(user: User): void {
+    localStorage.setItem('currentUser', JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   requestPasswordReset(email: string): Observable<any> {

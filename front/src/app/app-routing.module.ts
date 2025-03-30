@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminGuard } from '@core/guards/admin.guard';
+import { AuthGuard } from '@core/guards/auth.guard';
+import { AuthRedirectGuard } from '@core/guards/auth-redirect.guard';
 
 const routes: Routes = [
   {
@@ -9,7 +11,8 @@ const routes: Routes = [
   },
   {
     path: 'auth',
-    loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule)
+    loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule),
+    canActivate: [AuthRedirectGuard]
   },
   {
     path: 'admin',
@@ -27,6 +30,21 @@ const routes: Routes = [
   {
     path: 'cart',
     loadChildren: () => import('./modules/cart/cart.module').then(m => m.CartModule)
+  },
+  {
+    path: 'user',
+    loadChildren: () => import('./modules/user/user.module').then(m => m.UserModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'favorites',
+    loadChildren: () => import('./modules/favorites/favorites.module').then(m => m.FavoritesModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'shopping',
+    loadChildren: () => import('./modules/shopping/shopping.module').then(m => m.ShoppingModule),
+    canActivate: [AuthGuard]
   },
   {
     path: '**',

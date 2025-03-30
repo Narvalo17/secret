@@ -1,11 +1,15 @@
 export interface User {
-  id: number;
+  id?: number;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  role: 'ADMIN' | 'USER';
-  createdAt?: Date;
-  updatedAt?: Date;
+  password?: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  emailVerified?: boolean;
+  role?: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
 }
 
 export interface UserResponse {

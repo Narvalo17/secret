@@ -24,7 +24,11 @@ export class FavoriteStoresComponent implements OnInit {
 
     this.storeService.getFavoriteStores().subscribe({
       next: (response) => {
-        this.favoriteStores = response.data;
+        if (response && response.data) {
+          this.favoriteStores = response.data;
+        } else {
+          this.favoriteStores = [];
+        }
         this.isLoading = false;
       },
       error: () => {

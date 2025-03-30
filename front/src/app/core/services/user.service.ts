@@ -1,56 +1,33 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  address?: string;
-  role: string;
-}
-
-export interface UserUpdate {
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  phone?: string;
-  address?: string;
-  currentPassword?: string;
-  newPassword?: string;
-}
+import { User } from '@core/models/user.model';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private readonly apiUrl = 'api/user';
+  private apiUrl = environment.apiUrl + '/users';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  updateUser(userId: number, userData: UserUpdate): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/update`, userData);
+  getUserById(id: number): Observable<User> {
+    return this.http.get<User>(`${this.apiUrl}/${id}`);
   }
 
-  resetPassword(email: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/reset/password`, { email });
+  updateUser(id: number, userData: Partial<User>): Observable<User> {
+    const updateData = {
+      firstName: userData.firstName,
+      lastName: userData.lastName,
+      email: userData.email,
+      phoneNumber: userData.phoneNumber,
+      password: userData.password || ''
+    };
+    return this.http.put<User>(`${this.apiUrl}/${id.toString()}`, updateData);
   }
 
-  createUser(userData: Omit<User, 'id' | 'role'>): Observable<User> {
-    return this.http.post<User>(`${this.apiUrl}/create`, userData);
+  updatePassword(id: number, newPassword: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${id}/password`, { password: newPassword });
   }
-
-  getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/me`);
-  }
-
-  updatePassword(currentPassword: string, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/update-password`, {
-      currentPassword,
-      newPassword
-    });
-  }
-} 
+}

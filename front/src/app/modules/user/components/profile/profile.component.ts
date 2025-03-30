@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { User, UserService, UserUpdate } from '@core/services/user.service';
-import { NotificationService } from '@core/services/notification.service';
+import { User } from '@core/models/user.model';
+import { AuthService } from '@core/services/auth.service';
+import { UserService } from '@core/services/user.service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-profile',
@@ -9,97 +11,102 @@ import { NotificationService } from '@core/services/notification.service';
   styleUrls: ['./profile.component.scss']
 })
 export class ProfileComponent implements OnInit {
-  profileForm: FormGroup;
-  passwordForm: FormGroup;
-  loading = false;
   user: User | null = null;
+  profileForm: FormGroup;
+  isEditing = false;
+  error: string | null = null;
+  success: string | null = null;
 
   constructor(
-    private fb: FormBuilder,
+    private authService: AuthService,
     private userService: UserService,
-    private notificationService: NotificationService
+    private fb: FormBuilder
   ) {
     this.profileForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      firstName: [''],
-      lastName: [''],
-      phone: [''],
-      address: ['']
+      phoneNumber: ['', Validators.required],
+      street: [''],
+      city: [''],
+      postalCode: ['', [Validators.pattern(/^\d{5}$/)]],
+      currentPassword: ['']
     });
-
-    this.passwordForm = this.fb.group({
-      currentPassword: ['', Validators.required],
-      newPassword: ['', [Validators.required, Validators.minLength(8)]],
-      confirmPassword: ['', Validators.required]
-    }, { validator: this.passwordMatchValidator });
   }
 
   ngOnInit(): void {
     this.loadUserProfile();
   }
 
-  loadUserProfile(): void {
-    this.loading = true;
-    this.userService.getCurrentUser().subscribe({
-      next: (user) => {
-        this.user = user;
-        this.profileForm.patchValue({
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phone: user.phone,
-          address: user.address
-        });
-        this.loading = false;
-      },
-      error: (error) => {
-        this.notificationService.error('Erreur lors du chargement du profil');
-        this.loading = false;
-      }
-    });
+  private loadUserProfile(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser?.id) {
+      this.userService.getUserById(currentUser.id).subscribe({
+        next: (user) => {
+          this.user = user;
+          this.profileForm.patchValue({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+            phoneNumber: user.phoneNumber,
+            street: user.street,
+            city: user.city,
+            postalCode: user.postalCode
+          });
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Erreur lors du chargement du profil:', error);
+          this.error = error.error?.message || 'Erreur lors du chargement du profil';
+        }
+      });
+    }
   }
 
-  onUpdateProfile(): void {
+  onEdit(): void {
+    this.isEditing = true;
+    this.error = null;
+  }
+
+  onCancel(): void {
+    this.isEditing = false;
+    if (this.user) {
+      this.profileForm.patchValue(this.user);
+    }
+    this.error = null;
+  }
+
+  onSubmit(): void {
     if (this.profileForm.valid) {
-      this.loading = true;
-      const userData: UserUpdate = this.profileForm.value;
-      
-      this.userService.updateUser(this.user!.id, userData).subscribe({
+      const formData = this.profileForm.value;
+      const userId = this.authService.getCurrentUser()?.id;
+
+      if (!userId) {
+        this.error = 'Utilisateur non trouvé';
+        return;
+      }
+
+      const updateData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        street: formData.street,
+        city: formData.city,
+        postalCode: formData.postalCode,
+        password: formData.currentPassword || ''
+      };
+
+      this.userService.updateUser(userId, updateData).subscribe({
         next: (updatedUser) => {
-          this.user = updatedUser;
-          this.notificationService.success('Profil mis à jour avec succès');
-          this.loading = false;
+          this.success = 'Profil mis à jour avec succès';
+          this.isEditing = false;
+          this.authService.updateCurrentUser(updatedUser);
         },
-        error: (error) => {
-          this.notificationService.error('Erreur lors de la mise à jour du profil');
-          this.loading = false;
+        error: (error: HttpErrorResponse) => {
+          console.error('Erreur lors de la mise à jour du profil:', error);
+          this.error = 'Erreur lors de la mise à jour du profil: ' + (error.error?.message || error.message);
         }
       });
     }
-  }
-
-  onUpdatePassword(): void {
-    if (this.passwordForm.valid) {
-      this.loading = true;
-      const { currentPassword, newPassword } = this.passwordForm.value;
-
-      this.userService.updatePassword(currentPassword, newPassword).subscribe({
-        next: () => {
-          this.notificationService.success('Mot de passe mis à jour avec succès');
-          this.passwordForm.reset();
-          this.loading = false;
-        },
-        error: (error) => {
-          this.notificationService.error('Erreur lors de la mise à jour du mot de passe');
-          this.loading = false;
-        }
-      });
-    }
-  }
-
-  private passwordMatchValidator(g: FormGroup): null | { mismatch: boolean } {
-    const newPassword = g.get('newPassword')?.value;
-    const confirmPassword = g.get('confirmPassword')?.value;
-    return newPassword === confirmPassword ? null : { mismatch: true };
   }
 } 
