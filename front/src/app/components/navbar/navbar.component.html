@@ -68,19 +68,15 @@
             
             <!-- Options pour STORE_OWNER -->
             <ng-container *ngIf="isStoreOwner">
-              <a routerLink="/dashboard">
-                <mat-icon>dashboard</mat-icon>
-                Tableau de bord
-              </a>
-              <a routerLink="/my-store">
+              <a routerLink="/merchant/my-store">
                 <mat-icon>store</mat-icon>
                 Mon Magasin
               </a>
-              <a routerLink="/store-products">
+              <a routerLink="/merchant/store-products">
                 <mat-icon>inventory_2</mat-icon>
                 Mes Produits
               </a>
-              <a routerLink="/store-orders">
+              <a routerLink="/merchant/store-orders">
                 <mat-icon>receipt_long</mat-icon>
                 Commandes Reçues
               </a>

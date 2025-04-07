@@ -1,32 +1,55 @@
 export interface Product {
-  id: number;
+  id?: number;
   name: string;
-  description: string;
-  originalPrice: number;
-  discountPercentage: number;
-  currentPrice: number;
-  quantity: number;
+  description?: string;
   price: number;
-  stock: number;
-  imageUrl: string;
-  category: string;
-  storeId?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
-  selectedQuantity?: number;
+  quantity: number;
+  active: boolean;
+  category?: {
+    id: number;
+    name: string;
+  };
+  store: {
+    id: number;
+    name: string;
+  };
+  imageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateProductDto {
+  name: string;
+  description?: string;
+  price: number;
+  quantity: number;
+  active?: boolean;
+  categoryId?: number;
+  storeId: number;
+  imageUrl?: string;
+}
+
+export interface UpdateProductDto {
+  name?: string;
+  description?: string;
+  price?: number;
+  quantity?: number;
+  active?: boolean;
+  categoryId?: number;
+  imageUrl?: string;
 }
 
 export interface ProductFilter {
-  category?: string;
+  category?: number;
   minPrice?: number;
   maxPrice?: number;
-  inStock?: boolean;
   storeId?: number;
   searchTerm?: string;
+  active?: boolean;
 }
 
 export interface ProductSortOptions {
-  field: keyof Product;
+  field: string;
   direction: 'asc' | 'desc';
 }
 

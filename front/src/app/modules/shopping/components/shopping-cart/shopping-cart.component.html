@@ -21,31 +21,31 @@
     <div *ngIf="!loading && cartItems.length > 0" class="cart-items">
       <div class="cart-item" *ngFor="let item of cartItems">
         <div class="item-image">
-          <img [src]="item.imageUrl" [alt]="item.name">
+          <img [src]="getProductImageUrl(item)" [alt]="item.name">
         </div>
         <div class="item-details">
           <h3>{{ item.name }}</h3>
           <p class="description">{{ item.description }}</p>
-          <p class="price">{{ item.price | currency:'EUR' }}</p>
+          <p class="price">{{ formatPrice(item.price || 0) }}</p>
         </div>
         <div class="item-quantity">
           <button class="btn btn-sm" 
-                  (click)="updateQuantity(item.id, item.quantity - 1)"
-                  [disabled]="item.quantity <= 1 || loading">
+                  (click)="updateQuantity(item.id || 0, (item.quantity || 1) - 1)"
+                  [disabled]="(item.quantity || 0) <= 1 || loading">
             <i class="fas fa-minus"></i>
           </button>
-          <span>{{ item.quantity }}</span>
+          <span>{{ item.quantity || 1 }}</span>
           <button class="btn btn-sm" 
-                  (click)="updateQuantity(item.id, item.quantity + 1)"
+                  (click)="updateQuantity(item.id || 0, (item.quantity || 1) + 1)"
                   [disabled]="loading">
             <i class="fas fa-plus"></i>
           </button>
         </div>
         <div class="item-total">
-          {{ item.price * item.quantity | currency:'EUR' }}
+          {{ formatPrice((item.price || 0) * (item.quantity || 1)) }}
         </div>
         <button class="btn btn-danger btn-sm" 
-                (click)="removeItem(item.id)"
+                (click)="removeItem(item.id || 0)"
                 [disabled]="loading">
           <i class="fas fa-trash"></i>
         </button>
@@ -54,7 +54,7 @@
       <div class="cart-summary">
         <div class="total">
           <span>Total :</span>
-          <span class="amount">{{ total | currency:'EUR' }}</span>
+          <span class="amount">{{ formatPrice(total) }}</span>
         </div>
         <button class="btn btn-primary btn-lg">
           Passer la commande

@@ -1,0 +1,188 @@
+<div class="container">
+  <div class="header">
+    <h1>Mon Magasin</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="toggleEditMode()" *ngIf="hasStore && !isEditing">
+        <mat-icon>edit</mat-icon>
+        Modifier
+      </button>
+      <button mat-raised-button color="warn" (click)="toggleEditMode()" *ngIf="hasStore && isEditing">
+        <mat-icon>cancel</mat-icon>
+        Annuler
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-spinner></mat-spinner>
+    <p>Chargement en cours...</p>
+  </div>
+
+  <!-- Formulaire de création/modification de magasin -->
+  <div class="store-form" *ngIf="isEditing">
+    <h2>{{ hasStore ? 'Modifier les informations de mon magasin' : 'Créer mon magasin' }}</h2>
+    <form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Nom du magasin</mat-label>
+          <input matInput formControlName="name" placeholder="Nom du magasin">
+          <mat-error *ngIf="storeForm.get('name')?.hasError('required')">
+            Le nom est requis
+          </mat-error>
+          <mat-error *ngIf="storeForm.get('name')?.hasError('minlength')">
+            Le nom doit contenir au moins 3 caractères
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Description</mat-label>
+          <textarea matInput formControlName="description" placeholder="Description du magasin" rows="4"></textarea>
+          <mat-error *ngIf="storeForm.get('description')?.hasError('required')">
+            La description est requise
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Catégorie</mat-label>
+          <mat-select formControlName="category">
+            <mat-option *ngFor="let category of categories" [value]="category">
+              {{ category }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="storeForm.get('category')?.hasError('required')">
+            La catégorie est requise
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Adresse</mat-label>
+          <input matInput formControlName="address" placeholder="Adresse complète">
+          <mat-error *ngIf="storeForm.get('address')?.hasError('required')">
+            L'adresse est requise
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row two-columns">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" placeholder="Email de contact">
+          <mat-error *ngIf="storeForm.get('email')?.hasError('email')">
+            Format d'email invalide
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Téléphone</mat-label>
+          <input matInput formControlName="phone" placeholder="Numéro de téléphone">
+          <mat-error *ngIf="storeForm.get('phone')?.hasError('pattern')">
+            Format de téléphone invalide
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Site web</mat-label>
+          <input matInput formControlName="website" placeholder="Site web (optionnel)">
+          <mat-error *ngIf="storeForm.get('website')?.hasError('pattern')">
+            Format d'URL invalide
+          </mat-error>
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>URL de l'image</mat-label>
+          <input matInput formControlName="image_url" placeholder="URL de l'image (optionnel)">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput formControlName="password" type="password" placeholder="Mot de passe">
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-raised-button type="button" color="warn" (click)="toggleEditMode()" *ngIf="hasStore">Annuler</button>
+        <button mat-raised-button type="submit" color="primary" [disabled]="storeForm.invalid">
+          {{ hasStore ? 'Enregistrer les modifications' : 'Créer mon magasin' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Affichage des informations du magasin -->
+  <div class="store-details" *ngIf="hasStore && !isEditing && !loading">
+    <div class="store-card">
+      <div class="store-header">
+        <div class="store-image">
+          <img *ngIf="store?.image_url" [src]="store?.image_url" alt="{{ store?.name }}">
+          <div *ngIf="!store?.image_url" class="placeholder-image">
+            <mat-icon>storefront</mat-icon>
+          </div>
+        </div>
+        <div class="store-status" [ngClass]="{'active': store?.is_active, 'inactive': !store?.is_active}">
+          {{ store?.is_active ? 'Actif' : 'Inactif' }}
+        </div>
+      </div>
+
+      <div class="store-body">
+        <h2>{{ store?.name }}</h2>
+        <p class="category">{{ store?.category }}</p>
+        <p class="description">{{ store?.description }}</p>
+
+        <div class="store-info">
+          <div class="info-item">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ store?.address }}</span>
+          </div>
+          <div class="info-item" *ngIf="store?.phone">
+            <mat-icon>phone</mat-icon>
+            <span>{{ store?.phone }}</span>
+          </div>
+          <div class="info-item" *ngIf="store?.email">
+            <mat-icon>email</mat-icon>
+            <span>{{ store?.email }}</span>
+          </div>
+          <div class="info-item" *ngIf="store?.website">
+            <mat-icon>language</mat-icon>
+            <a [href]="store?.website" target="_blank">{{ store?.website }}</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="store-actions">
+        <button mat-raised-button color="primary" (click)="toggleEditMode()">
+          <mat-icon>edit</mat-icon>
+          Modifier mon magasin
+        </button>
+        <button mat-raised-button 
+                [color]="store?.is_active ? 'warn' : 'accent'"
+                (click)="updateStoreStatus(!store?.is_active)">
+          <mat-icon>{{ store?.is_active ? 'visibility_off' : 'visibility' }}</mat-icon>
+          {{ store?.is_active ? 'Désactiver mon magasin' : 'Activer mon magasin' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Message si le commerçant n'a pas encore de magasin -->
+  <div class="no-store" *ngIf="!hasStore && !isEditing && !loading">
+    <mat-icon class="no-store-icon">store_off</mat-icon>
+    <h2>Vous n'avez pas encore de magasin</h2>
+    <p>Créez votre magasin pour commencer à vendre vos produits sur notre plateforme.</p>
+    <button mat-raised-button color="primary" (click)="isEditing = true">
+      <mat-icon>add_business</mat-icon>
+      Créer mon magasin
+    </button>
+  </div>
+</div> 

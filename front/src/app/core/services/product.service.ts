@@ -3,36 +3,42 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Product, ProductResponse, ProductFilter } from '../models/product.model';
 import { environment } from '../../../environments/environment';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
-  private readonly apiUrl = `${environment.apiUrl}/admin/product`;
+  private readonly apiUrl = `${environment.apiUrl}/products`;
 
   constructor(private http: HttpClient) {}
 
-  getAllProducts(): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}`);
+  getAllProducts(page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
+    return this.http.get<any>(`${this.apiUrl}?page=${page}&size=${size}`);
   }
 
-  getProductsByStore(storeId: number): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/store/${storeId}`);
+  getProductsByStore(storeId: number, page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
+    return this.http.get<any>(`${this.apiUrl}/store/${storeId}?page=${page}&size=${size}`);
   }
 
-  getProductById(id: number): Observable<Product | undefined> {
+  getProductById(id: number): Observable<Product> {
     return this.http.get<Product>(`${this.apiUrl}/${id}`);
   }
 
-  getProducts(filter?: ProductFilter): Observable<Product[]> {
-    return this.http.get<Product[]>(`${this.apiUrl}/filters`, { params: filter as any });
+  getProductsByCategory(categoryId: number, page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
+    return this.http.get<any>(`${this.apiUrl}/category/${categoryId}?page=${page}&size=${size}`);
   }
 
-  getProduct(id: number): Observable<Product> {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`);
+  searchProducts(query: string, page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
+    return this.http.get<any>(`${this.apiUrl}/search?query=${query}&page=${page}&size=${size}`);
   }
 
-  createProduct(product: Omit<Product, 'id'>): Observable<Product> {
+  searchProductsByStore(storeId: number, query: string, page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
+    return this.http.get<any>(`${this.apiUrl}/store/${storeId}/search?query=${query}&page=${page}&size=${size}`);
+  }
+
+  createProduct(product: any): Observable<Product> {
+    console.log('ProductService: Création du produit', JSON.stringify(product));
     return this.http.post<Product>(`${this.apiUrl}`, product);
   }
 
@@ -44,23 +50,21 @@ export class ProductService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  deleteProducts(ids: number[]): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/delete-batch`, { ids });
+  updateProductStatus(id: number, isActive: boolean): Observable<Product> {
+    return this.http.put<Product>(`${this.apiUrl}/${id}/status?isActive=${isActive}`, {});
   }
 
-  cloneProduct(id: number): Observable<Product> {
-    return this.http.post<Product>(`${this.apiUrl}/${id}/clone`, {});
+  // Méthodes utilitaires
+  formatPrice(price: number): string {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
   }
 
-  getProductFilters(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/filters`);
+  getProductImageUrl(product: Product): string {
+    return product.imageUrl || 'assets/images/product-placeholder.jpg';
   }
 
-  addToCart(productId: number, quantity: number): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/shopping/add`, { productId, quantity });
-  }
-
-  removeFromCart(productId: number): Observable<any> {
-    return this.http.delete<any>(`${environment.apiUrl}/shopping/${productId}`);
+  // Méthode pour ajouter un produit au panier
+  addToCart(productId: number, quantity: number = 1): Observable<any> {
+    return this.http.post<any>(`${environment.apiUrl}/shopping-cart/add`, { productId, quantity });
   }
 } 

@@ -2,11 +2,16 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@core/models/store.model';
 import { Product } from '@core/models/product.model';
-import { CartItem } from '@core/models/cart.model';
 import { StoreService } from '@core/services/store.service';
 import { ProductService } from '@core/services/product.service';
-import { CartService } from '@core/services/cart.service';
+import { CategoryService } from '@core/services/category.service';
 import { NotificationService } from '@core/services/notification.service';
+
+interface CartItemDto {
+  productId: number;
+  quantity: number;
+  storeId: number;
+}
 
 @Component({
   selector: 'app-store-detail',
@@ -18,12 +23,15 @@ export class StoreDetailComponent implements OnInit {
   products: (Product & { selectedQuantity: number })[] = [];
   loading = false;
   error = false;
+  currentPage = 0;
+  pageSize = 12;
+  totalProducts = 0;
 
   constructor(
     private route: ActivatedRoute,
     private storeService: StoreService,
     private productService: ProductService,
-    private cartService: CartService,
+    private categoryService: CategoryService,
     private notificationService: NotificationService
   ) {}
 
@@ -56,12 +64,13 @@ export class StoreDetailComponent implements OnInit {
 
   private loadProducts(storeId: number): void {
     this.loading = true;
-    this.productService.getProductsByStore(storeId).subscribe({
-      next: (products) => {
-        this.products = products.map(product => ({
+    this.productService.getProductsByStore(storeId, this.currentPage, this.pageSize).subscribe({
+      next: (response) => {
+        this.products = response.content.map(product => ({
           ...product,
           selectedQuantity: 1
         }));
+        this.totalProducts = response.totalElements;
         this.loading = false;
       },
       error: (error: Error) => {
@@ -74,7 +83,7 @@ export class StoreDetailComponent implements OnInit {
   }
 
   incrementQuantity(product: Product & { selectedQuantity: number }): void {
-    if (product.selectedQuantity < product.stock) {
+    if (product.selectedQuantity < product.quantity) {
       product.selectedQuantity++;
     }
   }
@@ -91,25 +100,18 @@ export class StoreDetailComponent implements OnInit {
       return;
     }
 
-    if (!this.store) {
-      this.notificationService.error('Erreur : informations du magasin manquantes');
+    if (!this.store || !product.id) {
+      this.notificationService.error('Erreur : informations du produit ou du magasin manquantes');
       return;
     }
 
-    const cartItem: CartItem = {
-      id: product.id.toString(),
-      name: product.name,
-      description: product.description,
-      price: product.currentPrice,
-      originalPrice: product.originalPrice,
-      discountPercentage: product.discountPercentage,
+    const cartItem: CartItemDto = {
+      productId: product.id,
       quantity: product.selectedQuantity,
-      imageUrl: product.imageUrl,
-      storeId: this.store.id.toString(),
-      storeName: this.store.name
+      storeId: this.store.id
     };
 
-    this.cartService.addToCart(cartItem).subscribe({
+    this.productService.addToCart(product.id, product.selectedQuantity).subscribe({
       next: () => {
         this.notificationService.success('Produit ajouté au panier');
         product.selectedQuantity = 1;
@@ -119,5 +121,17 @@ export class StoreDetailComponent implements OnInit {
         this.notificationService.error('Erreur lors de l\'ajout au panier');
       }
     });
+  }
+
+  formatPrice(price: number): string {
+    return this.productService.formatPrice(price);
+  }
+
+  getProductImageUrl(product: Product): string {
+    return this.productService.getProductImageUrl(product);
+  }
+
+  getCategoryName(categoryId: number | null | undefined): string {
+    return this.categoryService.getCategoryName(categoryId);
   }
 } 

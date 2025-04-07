@@ -28,7 +28,7 @@
   <!-- Message d'erreur -->
   <div *ngIf="error" class="error-message">
     <i class="fas fa-exclamation-circle"></i>
-    {{ error }}
+    Une erreur est survenue lors du chargement des produits
   </div>
 
   <!-- Loader -->
@@ -41,27 +41,24 @@
   <div *ngIf="!loading && !error" class="products-grid">
     <div *ngFor="let product of filteredProducts" class="product-card" [class.low-stock]="product.quantity < 5">
       <div class="product-image">
-        <img [src]="product.imageUrl || 'assets/images/default-product.jpg'" [alt]="product.name">
-        <div class="discount-badge" *ngIf="product.discountPercentage > 0">
-          -{{ product.discountPercentage }}%
-        </div>
+        <img [src]="getProductImageUrl(product)" [alt]="product.name">
         <div class="product-overlay">
           <div class="quantity-selector">
             <button 
               class="quantity-btn"
               (click)="updateQuantity(product.id!, -1)"
-              [disabled]="selectedQuantities[product.id!] <= 1">
+              [disabled]="!product.id || (selectedQuantities[product.id] || 1) <= 1">
               <i class="fas fa-minus"></i>
             </button>
-            <span class="quantity-value">{{ selectedQuantities[product.id!] }}</span>
+            <span class="quantity-value">{{ product.id ? (selectedQuantities[product.id] || 1) : 1 }}</span>
             <button 
               class="quantity-btn"
               (click)="updateQuantity(product.id!, 1)"
-              [disabled]="selectedQuantities[product.id!] >= product.quantity">
+              [disabled]="!product.id || (selectedQuantities[product.id] || 1) >= product.quantity">
               <i class="fas fa-plus"></i>
             </button>
           </div>
-          <button (click)="addToCart(product)" class="add-to-cart-btn">
+          <button (click)="addToCart(product)" class="add-to-cart-btn" [disabled]="!product.active || product.quantity <= 0">
             <i class="fas fa-cart-plus"></i>
             Ajouter au panier
           </button>
@@ -73,10 +70,12 @@
       <div class="product-info">
         <h3>{{ product.name }}</h3>
         <p class="description">{{ product.description }}</p>
+        <div class="category-info">
+          <span class="category-badge">{{ product.category?.name || getCategoryName(product.category?.id) }}</span>
+        </div>
         <div class="product-footer">
           <div class="price-info">
-            <span class="original-price">{{ product.originalPrice | currency:'EUR' }}</span>
-            <span class="current-price">{{ product.currentPrice | currency:'EUR' }}</span>
+            <span class="current-price">{{ formatPrice(product.price) }}</span>
           </div>
           <span class="quantity">
             <i class="fas fa-box"></i>
@@ -85,6 +84,25 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Pagination -->
+  <div *ngIf="!loading && !error && totalItems > 0" class="pagination">
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === 0" 
+      (click)="changePage(currentPage - 1)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
+    <span class="pagination-info">
+      Page {{ currentPage + 1 }} sur {{ Math.ceil(totalItems / pageSize) }}
+    </span>
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage >= Math.ceil(totalItems / pageSize) - 1" 
+      (click)="changePage(currentPage + 1)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
   </div>
 
   <!-- Message si aucun produit -->

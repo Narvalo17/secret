@@ -72,12 +72,17 @@ export class ProfileComponent implements OnInit {
   onSubmit(): void {
     if (this.profileForm.valid) {
       const formData = this.profileForm.value;
-      const userId = this.authService.getCurrentUser()?.id;
+      const currentUser = this.authService.getCurrentUser();
+      const userId = currentUser?.id;
 
       if (!userId) {
         this.error = 'Utilisateur non trouvé';
         return;
       }
+
+      // Préserver le rôle actuel de l'utilisateur
+      const currentRole = currentUser?.role || 'USER';
+      console.log('Rôle actuel préservé:', currentRole);
 
       // Mettre à jour les informations du profil
       const updateData = {
@@ -85,15 +90,40 @@ export class ProfileComponent implements OnInit {
         lastName: formData.lastName,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
-        password: formData.currentPassword || ''
+        password: formData.currentPassword || '',
+        confirmPassword: formData.currentPassword || '',
+        role: currentRole // Inclure explicitement le rôle actuel
       };
+
+      console.log('Données du formulaire à envoyer:', updateData);
 
       this.userService.updateUser(userId, updateData).subscribe({
         next: (updatedUser) => {
+          // S'assurer que le rôle est préservé dans l'utilisateur mis à jour
+          if (!updatedUser.role && currentRole) {
+            updatedUser.role = currentRole;
+          }
+          
+          console.log('Utilisateur mis à jour avec le rôle:', updatedUser.role);
           this.success = 'Profil mis à jour avec succès';
           this.isEditing = false;
+          
           // Mettre à jour les informations de l'utilisateur dans le service d'authentification
           this.authService.updateCurrentUser(updatedUser);
+          
+          // Vérifier que le rôle a bien été préservé après la mise à jour
+          setTimeout(() => {
+            const userAfterUpdate = this.authService.getCurrentUser();
+            console.log('Vérification du rôle après mise à jour:', userAfterUpdate?.role);
+            
+            // Si le rôle n'a pas été préservé, forcer la mise à jour avec le rôle correct
+            if (userAfterUpdate && (!userAfterUpdate.role || userAfterUpdate.role !== currentRole)) {
+              console.log('Correction du rôle après mise à jour');
+              userAfterUpdate.role = currentRole;
+              this.authService.updateCurrentUser(userAfterUpdate);
+            }
+          }, 100);
+          
           // Réinitialiser le champ de mot de passe
           this.profileForm.patchValue({
             currentPassword: ''
@@ -101,7 +131,7 @@ export class ProfileComponent implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           console.error('Erreur lors de la mise à jour du profil:', error);
-          this.error = 'Erreur lors de la mise à jour du profil: ' + (error.error?.message || error.message);
+          this.error = 'Erreur lors de la mise à jour du profil: ' + (error.error?.message || error.message || JSON.stringify(error));
         }
       });
     }

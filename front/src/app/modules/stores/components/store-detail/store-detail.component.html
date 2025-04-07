@@ -3,17 +3,17 @@
     <div class="store-info">
       <h1>{{ store.name }}</h1>
       <div class="store-meta">
-        <span class="location">
+        <span class="location" *ngIf="store.address">
           <i class="fas fa-map-marker-alt"></i> {{ store.address }}
         </span>
-        <span class="category">
+        <span class="category" *ngIf="store.category">
           <i class="fas fa-store"></i> {{ store.category }}
         </span>
       </div>
       <p class="description">{{ store.description }}</p>
       <div class="contact-info">
-        <p><i class="fas fa-phone"></i> {{ store.phone }}</p>
-        <p><i class="fas fa-envelope"></i> {{ store.email }}</p>
+        <p *ngIf="store.phone"><i class="fas fa-phone"></i> {{ store.phone }}</p>
+        <p *ngIf="store.email"><i class="fas fa-envelope"></i> {{ store.email }}</p>
       </div>
     </div>
   </div>
@@ -24,33 +24,30 @@
     <div class="products-grid" *ngIf="products && products.length > 0">
       <div class="product-card" *ngFor="let product of products">
         <div class="product-image">
-          <img [src]="product.imageUrl || 'assets/images/placeholder.jpg'" [alt]="product.name">
-          <div class="discount-badge" *ngIf="product.discountPercentage > 0">
-            -{{ product.discountPercentage }}%
-          </div>
+          <img [src]="getProductImageUrl(product)" [alt]="product.name">
         </div>
         <div class="product-info">
           <h3>{{ product.name }}</h3>
           <p class="description">{{ product.description }}</p>
+          <div class="category-info">
+            <span class="category-badge">{{ product.category?.name || getCategoryName(product.category?.id) }}</span>
+          </div>
           <div class="price-info">
-            <p class="original-price" *ngIf="product.discountPercentage > 0">
-              {{ product.originalPrice | currency:'EUR' }}
-            </p>
-            <p class="current-price">{{ product.currentPrice | currency:'EUR' }}</p>
+            <p class="current-price">{{ formatPrice(product.price) }}</p>
           </div>
           <div class="stock-info">
-            <span [class.low-stock]="product.stock < 5">
-              Stock: {{ product.stock }}
+            <span [class.low-stock]="product.quantity < 5" [class.out-of-stock]="product.quantity === 0">
+              Stock: {{ product.quantity }}
             </span>
           </div>
         </div>
         <div class="product-actions">
           <div class="quantity-selector">
             <button (click)="decrementQuantity(product)" [disabled]="product.selectedQuantity <= 1">-</button>
-            <input type="number" [(ngModel)]="product.selectedQuantity" min="1" [max]="product.stock">
-            <button (click)="incrementQuantity(product)" [disabled]="product.selectedQuantity >= product.stock">+</button>
+            <input type="number" [(ngModel)]="product.selectedQuantity" min="1" [max]="product.quantity">
+            <button (click)="incrementQuantity(product)" [disabled]="product.selectedQuantity >= product.quantity">+</button>
           </div>
-          <button class="add-to-cart" (click)="addToCart(product)" [disabled]="product.stock === 0">
+          <button class="add-to-cart" (click)="addToCart(product)" [disabled]="product.quantity === 0 || !product.active">
             <i class="fas fa-cart-plus"></i> Ajouter au panier
           </button>
         </div>

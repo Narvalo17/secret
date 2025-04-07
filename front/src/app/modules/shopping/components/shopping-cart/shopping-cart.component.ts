@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Product } from '@core/models/product.model';
 import { ShoppingCartService } from '@core/services/shopping-cart.service';
 import { NotificationService } from '@core/services/notification.service';
+import { ProductService } from '@core/services/product.service';
 
 @Component({
   selector: 'app-shopping-cart',
@@ -15,6 +16,7 @@ export class ShoppingCartComponent implements OnInit {
 
   constructor(
     private shoppingCartService: ShoppingCartService,
+    private productService: ProductService,
     private notificationService: NotificationService
   ) { }
 
@@ -87,6 +89,14 @@ export class ShoppingCartComponent implements OnInit {
   }
 
   private calculateTotal(): void {
-    this.total = this.cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    this.total = this.shoppingCartService.calculateTotal(this.cartItems);
+  }
+
+  getProductImageUrl(product: Product): string {
+    return this.productService.getProductImageUrl(product);
+  }
+
+  formatPrice(price: number): string {
+    return this.productService.formatPrice(price);
   }
 } 

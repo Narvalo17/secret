@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ProductService } from '@core/services/product.service';
 import { NotificationService } from '@core/services/notification.service';
-import { CartService } from '@core/services/cart.service';
+import { CategoryService } from '@core/services/category.service';
 import { Product } from '@core/models/product.model';
-import { CartItem } from '@core/models/cart.model';
 
 interface Category {
   id: string;
@@ -32,9 +31,16 @@ export class ProductsComponent implements OnInit {
   selectedCategory = 'all';
   selectedQuantities: { [key: number]: number } = {};
 
+  currentPage = 0;
+  pageSize = 12;
+  totalItems = 0;
+
+  // Exposer Math pour le template
+  Math = Math;
+
   constructor(
     private productService: ProductService,
-    private cartService: CartService,
+    private categoryService: CategoryService,
     private notificationService: NotificationService
   ) {}
 
@@ -44,9 +50,16 @@ export class ProductsComponent implements OnInit {
 
   private loadProducts(): void {
     this.loading = true;
-    this.productService.getAllProducts().subscribe({
-      next: (products) => {
-        this.products = products;
+    this.productService.getAllProducts(this.currentPage, this.pageSize).subscribe({
+      next: (response) => {
+        this.products = response.content;
+        this.totalItems = response.totalElements;
+        // Initialiser les quantités sélectionnées pour chaque produit
+        this.products.forEach(product => {
+          if (product.id) {
+            this.selectedQuantities[product.id] = 1;
+          }
+        });
         this.loading = false;
       },
       error: (error) => {
@@ -74,21 +87,15 @@ export class ProductsComponent implements OnInit {
     }
   }
 
-  addToCart(product: Product, quantity: number = 1): void {
-    const cartItem: CartItem = {
-      id: product.id.toString(),
-      name: product.name,
-      description: product.description,
-      price: product.currentPrice,
-      originalPrice: product.originalPrice,
-      discountPercentage: product.discountPercentage,
-      quantity: quantity,
-      imageUrl: product.imageUrl,
-      storeId: product.storeId?.toString() || '',
-      storeName: '' // Le nom du magasin sera récupéré plus tard si nécessaire
-    };
+  addToCart(product: Product): void {
+    if (!product.id) {
+      this.notificationService.error('Produit invalide');
+      return;
+    }
 
-    this.cartService.addToCart(cartItem).subscribe({
+    const quantity = this.selectedQuantities[product.id] || 1;
+
+    this.productService.addToCart(product.id, quantity).subscribe({
       next: () => {
         this.notificationService.success(`${product.name} ajouté au panier`);
       },
@@ -99,12 +106,34 @@ export class ProductsComponent implements OnInit {
     });
   }
 
+  formatPrice(price: number): string {
+    return this.productService.formatPrice(price);
+  }
+
+  getProductImageUrl(product: Product): string {
+    return this.productService.getProductImageUrl(product);
+  }
+
+  getCategoryName(categoryId: number | null | undefined): string {
+    return this.categoryService.getCategoryName(categoryId);
+  }
+
   get filteredProducts(): Product[] {
     return this.products
       .filter(product => 
-        (this.selectedCategory === 'all' || product.category === this.selectedCategory) &&
+        (this.selectedCategory === 'all' || 
+         // Filtre basé sur la catégorie (ID ou nom)
+         (product.category?.name?.toLowerCase().includes(this.selectedCategory.toLowerCase()) || 
+          this.getCategoryName(product.category?.id).toLowerCase().includes(this.selectedCategory.toLowerCase()))
+        ) &&
+        // Filtre basé sur le terme de recherche
         (product.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        (product.description?.toLowerCase() || '').includes(this.searchTerm.toLowerCase()))
+         (product.description?.toLowerCase() || '').includes(this.searchTerm.toLowerCase()))
       );
+  }
+
+  changePage(page: number): void {
+    this.currentPage = page;
+    this.loadProducts();
   }
 } 

@@ -254,6 +254,16 @@ export class AuthService {
   }
 
   updateCurrentUser(user: User): void {
+    // Récupérer l'utilisateur actuel pour préserver le rôle si nécessaire
+    const currentUser = this.currentUserSubject.value;
+    
+    // Si le nouveau user n'a pas de rôle mais que l'utilisateur actuel en a un, préserver ce rôle
+    if (currentUser && currentUser.role && !user.role) {
+      console.log('Préservation du rôle lors de la mise à jour:', currentUser.role);
+      user.role = currentUser.role;
+    }
+    
+    console.log('Mise à jour de l\'utilisateur dans le localStorage avec rôle:', user.role);
     localStorage.setItem('currentUser', JSON.stringify(user));
     this.currentUserSubject.next(user);
   }
