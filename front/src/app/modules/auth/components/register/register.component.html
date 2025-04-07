@@ -99,18 +99,18 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Catégorie</mat-label>
-            <mat-select formControlName="category">
-              <mat-option value="Boulangeries">Boulangeries</mat-option>
-              <mat-option value="Restaurants">Restaurants</mat-option>
-              <mat-option value="Supermarchés">Supermarchés</mat-option>
-              <mat-option value="Épiceries">Épiceries</mat-option>
-              <mat-option value="Primeurs">Primeurs</mat-option>
-              <mat-option value="Pâtisseries">Pâtisseries</mat-option>
-              <mat-option value="Traiteurs">Traiteurs</mat-option>
-              <mat-option value="Autres">Autres</mat-option>
+            <mat-label>Type de magasin</mat-label>
+            <mat-select formControlName="storeType">
+              <mat-option value="BOULANGERIE">Boulangerie</mat-option>
+              <mat-option value="RESTAURANT">Restaurant</mat-option>
+              <mat-option value="SUPERMARCHE">Supermarché</mat-option>
+              <mat-option value="EPICERIE">Épicerie</mat-option>
+              <mat-option value="PRIMEUR">Primeur</mat-option>
+              <mat-option value="PATISSERIE">Pâtisserie</mat-option>
+              <mat-option value="TRAITEUR">Traiteur</mat-option>
+              <mat-option value="AUTRE">Autre</mat-option>
             </mat-select>
-            <mat-error *ngIf="storeForm.get('category')?.errors?.['required']">La catégorie est requise</mat-error>
+            <mat-error *ngIf="storeForm.get('storeType')?.errors?.['required']">Le type de magasin est requis</mat-error>
           </mat-form-field>
         </div>
 

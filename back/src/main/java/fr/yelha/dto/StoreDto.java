@@ -1,5 +1,6 @@
 package fr.yelha.dto;
 
+import fr.yelha.model.enums.StoreType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,11 +17,13 @@ public class StoreDto {
 
     private String description;
     private String imageUrl;
+    private String slug;
 
     @NotNull(message = "Le propriétaire est obligatoire")
     private Long ownerId;
 
-    private Long categoryId;
+    @NotNull(message = "Le type de magasin est obligatoire")
+    private StoreType storeType;
 
     @NotBlank(message = "L'adresse est obligatoire")
     private String address;
@@ -37,8 +40,7 @@ public class StoreDto {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    private String category;
-    private String categoryName;
+    private String storeTypeName;
     private String ownerName;
     private List<ProductDto> products;
     private Double rating;

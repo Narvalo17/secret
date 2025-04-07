@@ -44,12 +44,86 @@
         <span>Total</span>
         <span class="total-price">{{ cart.total | currency:'EUR' }}</span>
       </div>
-      <button class="checkout-btn" (click)="checkout()" [disabled]="loading">
+      <button class="checkout-btn" (click)="checkout()" [disabled]="loading || showPaymentForm">
         Passer la commande
       </button>
-      <button class="clear-cart-btn" (click)="clearAllItems()" [disabled]="loading">
+      <button class="clear-cart-btn" (click)="clearAllItems()" [disabled]="loading || showPaymentForm">
         <i class="fas fa-trash"></i> Vider le panier
       </button>
+    </div>
+    
+    <!-- Formulaire de paiement -->
+    <div class="payment-form-container" *ngIf="showPaymentForm">
+      <form [formGroup]="paymentForm" (ngSubmit)="submitPayment()" class="payment-form">
+        <h3>Informations de paiement</h3>
+        
+        <div class="form-group">
+          <label for="cardName">Nom sur la carte</label>
+          <input 
+            type="text" 
+            id="cardName" 
+            formControlName="cardName" 
+            placeholder="Ex: Jean Dupont"
+            [class.is-invalid]="paymentForm.get('cardName')?.invalid && paymentForm.get('cardName')?.touched"
+          >
+          <div class="error-message" *ngIf="paymentForm.get('cardName')?.invalid && paymentForm.get('cardName')?.touched">
+            Veuillez saisir le nom sur la carte
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="cardNumber">Numéro de carte</label>
+          <input 
+            type="text" 
+            id="cardNumber" 
+            formControlName="cardNumber" 
+            placeholder="1234567890123456"
+            [class.is-invalid]="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched"
+          >
+          <div class="error-message" *ngIf="paymentForm.get('cardNumber')?.invalid && paymentForm.get('cardNumber')?.touched">
+            Veuillez saisir un numéro de carte valide (16 chiffres)
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group half">
+            <label for="expiryDate">Date d'expiration</label>
+            <input 
+              type="text" 
+              id="expiryDate" 
+              formControlName="expiryDate" 
+              placeholder="MM/AA"
+              [class.is-invalid]="paymentForm.get('expiryDate')?.invalid && paymentForm.get('expiryDate')?.touched"
+            >
+            <div class="error-message" *ngIf="paymentForm.get('expiryDate')?.invalid && paymentForm.get('expiryDate')?.touched">
+              Format valide: MM/AA
+            </div>
+          </div>
+          
+          <div class="form-group half">
+            <label for="cvv">CVV</label>
+            <input 
+              type="text" 
+              id="cvv" 
+              formControlName="cvv" 
+              placeholder="123"
+              [class.is-invalid]="paymentForm.get('cvv')?.invalid && paymentForm.get('cvv')?.touched"
+            >
+            <div class="error-message" *ngIf="paymentForm.get('cvv')?.invalid && paymentForm.get('cvv')?.touched">
+              3 ou 4 chiffres
+            </div>
+          </div>
+        </div>
+        
+        <div class="payment-actions">
+          <button type="button" class="cancel-btn" (click)="cancelPayment()" [disabled]="loading">
+            Annuler
+          </button>
+          <button type="submit" class="confirm-btn" [disabled]="paymentForm.invalid || loading">
+            <i class="fas fa-lock"></i> Payer {{ cart.total | currency:'EUR' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

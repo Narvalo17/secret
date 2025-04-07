@@ -6,7 +6,7 @@ import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
 import { CategoryService, Category } from '@core/services/category.service';
 import { Product, CreateProductDto } from '@core/models/product.model';
-import { Store, CreateStoreDto } from '@core/models/store.model';
+import { Store, CreateStoreDto, StoreType } from '@core/models/store.model';
 import { forkJoin } from 'rxjs';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
@@ -19,6 +19,7 @@ export class StoreProductsComponent implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
   store: Store | null = null;
+  storeId: number | null = null;
   loading = {
     products: false,
     store: false,
@@ -567,43 +568,37 @@ export class StoreProductsComponent implements OnInit {
 
   createDefaultStore(): void {
     const currentUser = this.authService.getCurrentUser();
-    if (!currentUser?.id) {
-      this.notificationService.error('Vous devez être connecté pour créer un magasin');
+    if (!currentUser) {
+      this.notificationService.error('Impossible de créer un magasin: utilisateur non connecté');
       return;
     }
 
-    this.loading.store = true;
-    
-    // Créer un magasin temporaire par défaut
-    const defaultStore: CreateStoreDto = {
-      name: `Magasin de ${currentUser.firstName || 'Commerçant'} ${currentUser.lastName || ''}`,
-      description: 'Magasin temporaire',
-      address: 'À compléter',
-      category: 'ALIMENTATION',
-      phone: '',
+    const defaultStore: Store = {
+      id: 0, // Ce champ sera généré par le backend
+      name: "Mon magasin",
+      description: "Description de mon magasin",
+      address: "Adresse du magasin",
       email: currentUser.email,
-      website: '',
-      imageUrl: '',
+      phone: "",
+      website: "",
+      storeType: StoreType.AUTRE,
+      image_url: "",
       ownerId: currentUser.id,
-      password: ''
+      firstName: currentUser.firstName || "",
+      lastName: currentUser.lastName || "",
+      password: currentUser.password || "password"
     };
 
     this.storeService.createStore(defaultStore).subscribe({
-      next: (response) => {
-        if (response.success && response.data) {
-          this.store = response.data;
-          this.notificationService.success('Magasin temporaire créé avec succès');
-          this.showForm = true; // Afficher le formulaire d'ajout de produit
-          this.loading.store = false;
-        } else {
-          this.notificationService.error('Erreur lors de la création du magasin temporaire');
-          this.loading.store = false;
-        }
+      next: (createdStore) => {
+        this.store = createdStore;
+        this.storeId = createdStore.id;
+        this.notificationService.success('Magasin créé avec succès');
+        this.loadProductsByStore(createdStore.id);
       },
       error: (error) => {
-        console.error('Erreur lors de la création du magasin temporaire:', error);
-        this.notificationService.error('Impossible de créer un magasin temporaire');
-        this.loading.store = false;
+        console.error('Erreur lors de la création du magasin:', error);
+        this.notificationService.error('Erreur lors de la création du magasin');
       }
     });
   }

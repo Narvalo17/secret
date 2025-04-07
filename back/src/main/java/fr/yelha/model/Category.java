@@ -43,9 +43,6 @@ public class Category {
     private List<Category> children = new ArrayList<>();
 
     @OneToMany(mappedBy = "category")
-    private List<Store> stores = new ArrayList<>();
-
-    @OneToMany(mappedBy = "category")
     private List<Product> products = new ArrayList<>();
 
     private Integer level;

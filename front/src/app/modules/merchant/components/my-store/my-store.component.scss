@@ -248,4 +248,18 @@
   button {
     min-width: 200px;
   }
+}
+
+.info-message {
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  padding: 10px 15px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  
+  mat-icon {
+    margin-right: 10px;
+  }
 } 

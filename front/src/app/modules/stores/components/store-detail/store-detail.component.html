@@ -6,8 +6,8 @@
         <span class="location" *ngIf="store.address">
           <i class="fas fa-map-marker-alt"></i> {{ store.address }}
         </span>
-        <span class="category" *ngIf="store.category">
-          <i class="fas fa-store"></i> {{ store.category }}
+        <span class="category" *ngIf="store.storeTypeName">
+          <i class="fas fa-store"></i> {{ store.storeTypeName }}
         </span>
       </div>
       <p class="description">{{ store.description }}</p>

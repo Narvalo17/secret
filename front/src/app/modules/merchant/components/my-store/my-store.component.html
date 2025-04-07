@@ -21,6 +21,12 @@
   <!-- Formulaire de création/modification de magasin -->
   <div class="store-form" *ngIf="isEditing">
     <h2>{{ hasStore ? 'Modifier les informations de mon magasin' : 'Créer mon magasin' }}</h2>
+    
+    <div class="info-message mat-elevation-z1">
+      <mat-icon>info</mat-icon>
+      <span>Tous les champs marqués d'un * sont obligatoires. Le numéro de téléphone doit contenir entre 10 et 15 chiffres.</span>
+    </div>
+    
     <form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
       <div class="form-row">
         <mat-form-field appearance="outline">
@@ -35,6 +41,12 @@
         </mat-form-field>
       </div>
 
+      <!-- Champs masqués pour le prénom et le nom -->
+      <div style="display: none;">
+        <input formControlName="firstName" type="hidden">
+        <input formControlName="lastName" type="hidden">
+      </div>
+
       <div class="form-row">
         <mat-form-field appearance="outline">
           <mat-label>Description</mat-label>
@@ -47,14 +59,14 @@
 
       <div class="form-row">
         <mat-form-field appearance="outline">
-          <mat-label>Catégorie</mat-label>
-          <mat-select formControlName="category">
-            <mat-option *ngFor="let category of categories" [value]="category">
-              {{ category }}
+          <mat-label>Type de magasin</mat-label>
+          <mat-select formControlName="storeType">
+            <mat-option *ngFor="let type of storeTypes" [value]="type.value">
+              {{ type.label }}
             </mat-option>
           </mat-select>
-          <mat-error *ngIf="storeForm.get('category')?.hasError('required')">
-            La catégorie est requise
+          <mat-error *ngIf="storeForm.get('storeType')?.hasError('required')">
+            Le type de magasin est requis
           </mat-error>
         </mat-form-field>
       </div>
@@ -137,7 +149,7 @@
 
       <div class="store-body">
         <h2>{{ store?.name }}</h2>
-        <p class="category">{{ store?.category }}</p>
+        <p class="category">{{ store?.storeTypeName }}</p>
         <p class="description">{{ store?.description }}</p>
 
         <div class="store-info">

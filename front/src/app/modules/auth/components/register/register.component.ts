@@ -40,7 +40,7 @@ export class RegisterComponent {
       phone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
       email: ['', [Validators.required, Validators.email]],
       website: [''],
-      category: ['', [Validators.required]]
+      storeType: ['', [Validators.required]]
     });
   }
 
@@ -86,7 +86,7 @@ export class RegisterComponent {
           phone: storeFormValue.phone,
           email: storeFormValue.email,
           website: storeFormValue.website || null,
-          category: storeFormValue.category,
+          storeType: storeFormValue.storeType,
           isActive: true
         };
         console.log('🏪 Données magasin formatées:', storeData);

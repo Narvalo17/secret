@@ -23,10 +23,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { UserManagementComponent } from './components/user-management/user-management.component';
 import { UserFormDialogComponent } from './components/user-management/user-form-dialog/user-form-dialog.component';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { PasswordResetComponent } from './components/password-reset/password-reset.component';
-import { AdminDashboardComponent } from './components/dashboard/admin-dashboard.component';
 
 // Services
 import { AdminService } from './services/admin.service';
@@ -49,17 +45,13 @@ const materialModules = [
   declarations: [
     DashboardComponent,
     UserManagementComponent,
-    UserFormDialogComponent,
-    LoginComponent,
-    RegisterComponent,
-    PasswordResetComponent
+    UserFormDialogComponent
   ],
   imports: [
     CommonModule,
     ReactiveFormsModule,
     RouterModule,
     AdminRoutingModule,
-    AdminDashboardComponent,
     ...materialModules
   ],
   providers: [

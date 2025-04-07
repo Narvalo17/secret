@@ -7,6 +7,7 @@ import { AuthService } from '@core/services/auth.service';
 import { ShoppingCartService } from '@core/services/shopping-cart.service';
 import { ShoppingCart, ShoppingCartItem } from '@core/models/shopping-cart.ts';
 import { Subscription } from 'rxjs';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-cart',
@@ -17,6 +18,8 @@ export class CartComponent implements OnInit, OnDestroy {
   cart: Cart | null = null;
   shoppingCart: ShoppingCart = { items: [] };
   loading = false;
+  showPaymentForm = false;
+  paymentForm: FormGroup;
   private cartSubscription: Subscription | null = null;
 
   constructor(
@@ -24,8 +27,16 @@ export class CartComponent implements OnInit, OnDestroy {
     private shoppingCartService: ShoppingCartService,
     private notificationService: NotificationService,
     private router: Router,
-    private authService: AuthService
-  ) {}
+    private authService: AuthService,
+    private fb: FormBuilder
+  ) {
+    this.paymentForm = this.fb.group({
+      cardNumber: ['', [Validators.required, Validators.pattern(/^\d{16}$/)]],
+      cardName: ['', Validators.required],
+      expiryDate: ['', [Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]],
+      cvv: ['', [Validators.required, Validators.pattern(/^\d{3,4}$/)]]
+    });
+  }
 
   ngOnInit(): void {
     // Charger les deux carts pour rétrocompatibilité
@@ -158,14 +169,41 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
     
-    // TODO: Implémenter la logique de paiement
-    this.notificationService.success('Commande en cours de traitement');
-    this.router.navigate(['/checkout']);
+    // Afficher le formulaire de paiement
+    this.showPaymentForm = true;
+  }
+  
+  submitPayment(): void {
+    if (this.paymentForm.invalid) {
+      this.notificationService.error('Veuillez remplir correctement tous les champs du formulaire');
+      return;
+    }
+    
+    this.loading = true;
+    
+    // Simuler le traitement du paiement
+    setTimeout(() => {
+      this.loading = false;
+      this.notificationService.success('Paiement accepté! Votre commande est en cours de traitement');
+      
+      // Vider le panier après paiement
+      this.clearAllItems(false);
+      
+      // Masquer le formulaire de paiement
+      this.showPaymentForm = false;
+    }, 1500);
+  }
+  
+  cancelPayment(): void {
+    this.showPaymentForm = false;
+    this.paymentForm.reset();
   }
 
   // Méthode pour vider complètement le panier
-  clearAllItems(): void {
-    if (confirm('Êtes-vous sûr de vouloir vider votre panier ?')) {
+  clearAllItems(showConfirmation: boolean = true): void {
+    const proceed = !showConfirmation || confirm('Êtes-vous sûr de vouloir vider votre panier ?');
+    
+    if (proceed) {
       this.loading = true;
       this.shoppingCartService.clearCart().subscribe({
         next: (emptyCart) => {
@@ -173,7 +211,9 @@ export class CartComponent implements OnInit, OnDestroy {
           // Mise à jour de l'interface
           this.cart = { items: [], total: 0 };
           this.shoppingCart = emptyCart;
-          this.notificationService.success('Votre panier a été vidé');
+          if (showConfirmation) {
+            this.notificationService.success('Votre panier a été vidé');
+          }
           this.loading = false;
         },
         error: (error) => {

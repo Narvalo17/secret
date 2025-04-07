@@ -1,6 +1,7 @@
 package fr.yelha.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import fr.yelha.model.enums.StoreType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -39,10 +40,9 @@ public class Store {
     @JsonIgnoreProperties({"stores", "favoriteStores", "hibernateLazyInitializer", "handler"})
     private User owner;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    @JsonIgnoreProperties({"stores", "products", "hibernateLazyInitializer", "handler"})
-    private Category category;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "store_type", nullable = false)
+    private StoreType storeType = StoreType.AUTRE;
 
     private String address;
     private String phone;

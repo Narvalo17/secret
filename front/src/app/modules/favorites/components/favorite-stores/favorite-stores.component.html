@@ -3,7 +3,7 @@
     <h1>Mes Magasins Favoris</h1>
   </div>
 
-  <div class="stores-grid" *ngIf="!isLoading && !error">
+  <div class="stores-grid" *ngIf="!loading && !error">
     <div *ngFor="let store of favoriteStores" class="store-card">
       <div class="store-image">
         <img [src]="store.image_url || '/assets/images/default-store.jpg'" [alt]="store.name">
@@ -34,7 +34,7 @@
     </div>
   </div>
 
-  <div *ngIf="isLoading" class="loading">
+  <div *ngIf="loading" class="loading">
     <i class="fas fa-spinner fa-spin"></i>
     <p>Chargement des favoris...</p>
   </div>
@@ -44,7 +44,7 @@
     <p>{{ error }}</p>
   </div>
 
-  <div *ngIf="!isLoading && !error && favoriteStores.length === 0" class="no-favorites">
+  <div *ngIf="!loading && !error && favoriteStores.length === 0" class="no-favorites">
     <i class="fas fa-heart-broken"></i>
     <p>Vous n'avez pas encore de magasins favoris</p>
     <a routerLink="/stores" class="browse-stores-btn">

@@ -43,8 +43,8 @@ const routes: Routes = [
   },
   {
     path: 'shopping',
-    loadChildren: () => import('./modules/shopping/shopping.module').then(m => m.ShoppingModule),
-    canActivate: [AuthGuard]
+    redirectTo: 'cart',
+    pathMatch: 'full'
   },
   {
     path: 'merchant',

@@ -1,6 +1,7 @@
 package fr.yelha.repository;
 
 import fr.yelha.model.Store;
+import fr.yelha.model.enums.StoreType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,11 +23,9 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
            "(LOWER(s.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            "LOWER(s.description) LIKE LOWER(CONCAT('%', :query, '%')))")
     Page<Store> searchStores(String query, Pageable pageable);
-    
-    @Query("SELECT s FROM Store s WHERE s.isActive = true AND " +
-           "s.category.id = :categoryId")
-    Page<Store> findByCategoryId(Long categoryId, Pageable pageable);
 
     Page<Store> findByNameContainingIgnoreCaseOrDescriptionContainingIgnoreCase(String name, String description, Pageable pageable);
     boolean existsByIdAndOwnerId(Long storeId, Long ownerId);
+
+    Page<Store> findByStoreType(StoreType storeType, Pageable pageable);
 } 

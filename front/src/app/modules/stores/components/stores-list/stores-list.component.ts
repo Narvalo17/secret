@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { Store, StoreResponse } from '@core/models/store.model';
+import { Store, StoreType } from '@core/models/store.model';
 import { StoreService } from '@core/services/store.service';
 import { NotificationService } from '@core/services/notification.service';
 import { AuthService } from '@core/services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription, Subject } from 'rxjs';
+import { FavoriteStoreService } from '@core/services/favorite-store.service';
 
 @Component({
   selector: 'app-stores-list',
@@ -24,15 +25,15 @@ export class StoresListComponent implements OnInit, OnDestroy {
   private filterSubscription?: Subscription;
   private destroy$ = new Subject<void>();
 
-  categories: string[] = [
-    'Boulangeries',
-    'Restaurants',
-    'Supermarchés',
-    'Épiceries',
-    'Primeurs',
-    'Pâtisseries',
-    'Traiteurs',
-    'Autres'
+  storeTypes = [
+    { value: StoreType.BOULANGERIE, label: 'Boulangerie' },
+    { value: StoreType.RESTAURANT, label: 'Restaurant' },
+    { value: StoreType.SUPERMARCHE, label: 'Supermarché' },
+    { value: StoreType.EPICERIE, label: 'Épicerie' },
+    { value: StoreType.PRIMEUR, label: 'Primeur' },
+    { value: StoreType.PATISSERIE, label: 'Pâtisserie' },
+    { value: StoreType.TRAITEUR, label: 'Traiteur' },
+    { value: StoreType.AUTRE, label: 'Autre' }
   ];
 
   constructor(
@@ -41,7 +42,8 @@ export class StoresListComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
     private authService: AuthService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private favoriteStoreService: FavoriteStoreService
   ) {
     this.initializeForm();
     this.mode = this.route.snapshot.data['mode'] || 'customer';
@@ -51,7 +53,7 @@ export class StoresListComponent implements OnInit, OnDestroy {
     this.loadStores();
     this.setupFilterSubscription();
     if (this.authService.isAuthenticated()) {
-      this.loadFavoriteStates();
+      this.loadFavoriteStores();
     }
   }
 
@@ -64,7 +66,7 @@ export class StoresListComponent implements OnInit, OnDestroy {
   private initializeForm(): void {
     this.filterForm = this.fb.group({
       searchTerm: [''],
-      category: [''],
+      storeType: [''],
       sortBy: ['name']
     });
   }
@@ -88,14 +90,14 @@ export class StoresListComponent implements OnInit, OnDestroy {
     }
 
     this.storeService.getAllStores(filters).subscribe({
-      next: (response) => {
-        this.stores = response.content;
-        this.totalElements = response.totalElements;
+      next: (stores) => {
+        this.stores = stores;
+        this.totalElements = stores.length;
         this.isLoading = false;
 
         // Charger l'état des favoris si l'utilisateur est connecté
         if (this.authService.isAuthenticated()) {
-          this.loadFavoriteStates();
+          this.loadFavoriteStores();
         }
       },
       error: (error) => {
@@ -115,12 +117,12 @@ export class StoresListComponent implements OnInit, OnDestroy {
       filtered = filtered.filter(store =>
         store.name.toLowerCase().includes(searchTerm) ||
         (store.description && store.description.toLowerCase().includes(searchTerm)) ||
-        (store.category && store.category.toLowerCase().includes(searchTerm))
+        (store.storeTypeName && store.storeTypeName.toLowerCase().includes(searchTerm))
       );
     }
 
-    if (filters.category) {
-      filtered = filtered.filter(store => store.category === filters.category);
+    if (filters.storeType) {
+      filtered = filtered.filter(store => store.storeType === filters.storeType);
     }
 
     filtered = this.sortStores(filtered, filters.sortBy);
@@ -146,32 +148,17 @@ export class StoresListComponent implements OnInit, OnDestroy {
     });
   }
 
-  private loadFavoriteStates(): void {
-    if (!this.authService.isAuthenticated()) {
-      return;
-    }
-
-    this.isLoadingFavorites = true;
-    this.error = null;
-
-    this.storeService.getFavoriteStores().subscribe({
-      next: (response) => {
-        const favoriteStoreIds = new Set(response.content.map(store => store.id));
-        this.stores = this.stores.map(store => ({
-          ...store,
-          isFavorite: favoriteStoreIds.has(store.id)
-        }));
-        this.applyFilters();
-        this.isLoadingFavorites = false;
+  private loadFavoriteStores(): void {
+    this.favoriteStoreService.getFavoriteStores().subscribe({
+      next: (favoriteStores) => {
+        const favoriteStoreIds = new Set(favoriteStores.map(store => store.id));
+        this.stores.forEach(store => {
+          store.isFavorite = favoriteStoreIds.has(store.id);
+        });
+        this.filteredStores = [...this.stores];
       },
       error: (error) => {
-        console.error('Error loading favorite states:', error);
-        this.stores = this.stores.map(store => ({
-          ...store,
-          isFavorite: false
-        }));
-        this.applyFilters();
-        this.isLoadingFavorites = false;
+        console.error('Erreur lors du chargement des favoris:', error);
       }
     });
   }

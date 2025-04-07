@@ -1,5 +1,16 @@
 import { Product } from './product.model';
 
+export enum StoreType {
+  BOULANGERIE = 'BOULANGERIE',
+  RESTAURANT = 'RESTAURANT',
+  SUPERMARCHE = 'SUPERMARCHE',
+  EPICERIE = 'EPICERIE',
+  PRIMEUR = 'PRIMEUR',
+  PATISSERIE = 'PATISSERIE',
+  TRAITEUR = 'TRAITEUR',
+  AUTRE = 'AUTRE'
+}
+
 export interface Store {
   id: number;
   name: string;
@@ -8,7 +19,11 @@ export interface Store {
   phone?: string;
   email?: string;
   website?: string;
-  category?: string;
+  slug?: string;
+  
+  storeType?: StoreType;
+  storeTypeName?: string;
+  
   image_url?: string;
   rating?: number;
   distance?: number;
@@ -18,6 +33,7 @@ export interface Store {
   owner_id?: number;   // Alternative à ownerId selon le format de l'API
   openingHours?: string; // Horaires d'ouverture du magasin
   password?: string;   // Mot de passe utilisateur
+  confirmPassword?: string; // Confirmation du mot de passe
   firstName?: string;  // Prénom du propriétaire
   lastName?: string;   // Nom du propriétaire
 }
@@ -39,7 +55,7 @@ export interface StoreResponse {
 export interface CreateStoreDto {
   name: string;
   description: string;
-  category: string;
+  storeType?: StoreType;
   address: string;
   email: string;
   phone?: string;
@@ -47,4 +63,5 @@ export interface CreateStoreDto {
   imageUrl?: string;
   ownerId: number;
   password?: string;
+  confirmPassword?: string;
 } 

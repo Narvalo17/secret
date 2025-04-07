@@ -23,7 +23,7 @@ export interface Store {
   phone: string;
   email: string;
   website?: string;
-  category: string;
+  storeType: string;
   isActive: boolean;
   ownerId?: number;
 }
@@ -159,7 +159,7 @@ export class AuthService {
         phone: storeData.phone,
         email: storeData.email,
         website: storeData.website || null,
-        category: storeData.category,
+        storeType: storeData.storeType,
         isActive: true,
         // Ajouter les données utilisateur
         firstName: userData.firstName,
