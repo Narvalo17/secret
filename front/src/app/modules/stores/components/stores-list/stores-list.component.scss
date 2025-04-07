@@ -1,9 +1,14 @@
 .stores-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
   margin-top: 80px;
-  padding: 2rem;
   min-height: calc(100vh - 64px);
-  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
-  border-radius: 8px;
+  background: linear-gradient(135deg, #f5f7fa56 0%, #e4e8eb0a 100%);
 
   .filters-section {
     margin-bottom: 2rem;

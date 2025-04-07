@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, from } from 'rxjs';
-import { tap, switchMap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, from, catchError, of } from 'rxjs';
+import { tap, switchMap, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface User {
@@ -36,6 +36,8 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
   getToken: any;
+  // Flag pour éviter les appels récursifs
+  private isCheckingRole = false;
 
   constructor(
     private http: HttpClient,
@@ -60,13 +62,87 @@ export class AuthService {
       .pipe(
         tap((response: any) => {
           console.log('✅ Connexion réussie:', response);
-          // Sauvegarder l'utilisateur dans le localStorage
-          localStorage.setItem('currentUser', JSON.stringify(response));
-          this.currentUserSubject.next(response);
+          
+          // Stocker l'utilisateur temporairement avec un rôle par défaut
+          const basicUser = { ...response, role: 'USER' };
+          localStorage.setItem('currentUser', JSON.stringify(basicUser));
+          this.currentUserSubject.next(basicUser);
+          
+          // Récupérer le rôle en arrière-plan si l'ID est disponible
+          if (response.id) {
+            // On utilise directement l'API de rôle sans passer par fetchUserRole pour éviter les effets de bord
+            this.http.get<any>(`${this.apiUrl}/users/${response.id}/role`).subscribe(
+              roleResponse => {
+                if (roleResponse && roleResponse.role) {
+                  console.log('✅ Rôle récupéré après connexion:', roleResponse.role);
+                  // Mettre à jour l'utilisateur avec le rôle
+                  const updatedUser = { ...response, role: roleResponse.role };
+                  localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+                  this.currentUserSubject.next(updatedUser);
+                }
+              },
+              // En cas d'erreur, on garde l'utilisateur avec le rôle par défaut
+              error => console.error('❌ Erreur lors de la récupération du rôle initial:', error)
+            );
+          }
+          
           // Rediriger vers la page d'accueil
           this.router.navigate(['/']);
         })
       );
+  }
+
+  // Récupérer le rôle d'un utilisateur par son ID
+  fetchUserRole(userId: number): Observable<User> {
+    console.log('🔍 Récupération du rôle pour l\'utilisateur ID:', userId);
+    
+    // Utiliser directement l'API de rôle que nous avons créée
+    return this.http.get<any>(`${this.apiUrl}/users/${userId}/role`).pipe(
+      map(roleResponse => {
+        console.log('🔍 Réponse de l\'API de rôle:', roleResponse);
+        
+        // Créer un objet utilisateur minimal avec l'ID et le rôle
+        const user: User = {
+          id: userId,
+          email: '',  // Ces champs sont obligatoires mais ne seront pas utilisés
+          firstName: '',
+          lastName: '',
+          phoneNumber: '',
+          role: roleResponse && roleResponse.role ? roleResponse.role : 'USER'
+        };
+        
+        console.log('🔍 Rôle final:', user.role);
+        return user;
+      }),
+      // Gérer les erreurs pour éviter de bloquer la chaîne d'observables
+      catchError(error => {
+        console.error('❌ Erreur lors de la récupération du rôle:', error);
+        // Retourner un utilisateur avec le rôle par défaut en cas d'erreur
+        const user: User = {
+          id: userId,
+          email: '',
+          firstName: '',
+          lastName: '',
+          phoneNumber: '',
+          role: 'USER'
+        };
+        return of(user);
+      })
+    );
+  }
+
+  // Cette méthode ne sera plus utilisée pour modifier le rôle
+  checkIfStoreOwner(userId: number): Observable<boolean> {
+    return this.http.get<any>(`${this.apiUrl}/stores?ownerId=${userId}`).pipe(
+      tap(response => {
+        console.log('🏪 Vérification des magasins pour l\'utilisateur:', response);
+      }),
+      map(response => {
+        // Vérifier seulement, sans modifier le rôle
+        const isOwner = response && response.content && response.content.length > 0;
+        return isOwner;
+      })
+    );
   }
 
   register(userData: User, storeData?: Store | null): Observable<any> {
@@ -129,7 +205,44 @@ export class AuthService {
 
   isStoreOwner(): boolean {
     const currentUser = this.currentUserSubject.value;
-    return currentUser?.role === 'STORE_OWNER';
+    if (!currentUser) {
+      return false;
+    }
+    
+    // Si l'utilisateur existe mais n'a pas de rôle défini et qu'on n'est pas déjà en train de vérifier
+    if (!currentUser.role && currentUser.id && !this.isCheckingRole) {
+      console.log('⚠️ Utilisateur sans rôle défini, vérification asynchrone du rôle');
+      
+      // Éviter les appels récursifs
+      this.isCheckingRole = true;
+      
+      // Déclencher une vérification asynchrone du rôle
+      this.fetchUserRole(currentUser.id).subscribe(
+        userWithRole => {
+          console.log('✅ Mise à jour du rôle utilisateur:', userWithRole.role);
+          // Mettre à jour l'utilisateur avec le rôle récupéré
+          const updatedUser = { ...currentUser, role: userWithRole.role };
+          localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+          
+          // Réinitialiser le flag avant de mettre à jour le subject
+          this.isCheckingRole = false;
+          this.currentUserSubject.next(updatedUser);
+        },
+        error => {
+          console.error('❌ Erreur lors de la récupération du rôle:', error);
+          this.isCheckingRole = false;
+        }
+      );
+      
+      // Par défaut, on retourne false en attendant la vérification asynchrone
+      return false;
+    }
+    
+    const role = currentUser.role?.toUpperCase();
+    console.log('🔍 Vérification du rôle:', role);
+    
+    // Accepter uniquement STORE_OWNER comme rôle de commerçant
+    return role === 'STORE_OWNER';
   }
 
   getCurrentUser(): User | null {

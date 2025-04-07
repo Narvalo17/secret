@@ -1,3 +1,13 @@
+:host.store-owner {
+  .navbar-menu a {
+    display: none !important;
+  }
+  
+  .navbar-menu {
+    min-width: 0 !important;
+  }
+}
+
 .navbar {
   background: #333;
   padding: 1rem 2rem;

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, HostBinding } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { CartService } from '@core/services/cart.service';
@@ -14,21 +14,42 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isMenuOpen = false;
   isUserMenuOpen = false;
   isLoggedIn = false;
+  isStoreOwner = false;
   cartItemCount = 0;
   private cartSubscription: Subscription | undefined;
   private authSubscription: Subscription | undefined;
   lastScrollTop = 0;
   isScrolled = false;
+  
+  @HostBinding('class.store-owner') 
+  get isOwner() { 
+    return this.isStoreOwner; 
+  }
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private cartService: CartService
-  ) {}
+  ) {
+    // Vérification directe du localStorage
+    const storedUser = localStorage.getItem('currentUser');
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      console.log('📦 Utilisateur stocké dans localStorage:', user);
+      console.log('👤 Rôle stocké:', user.role);
+    } else {
+      console.log('❌ Aucun utilisateur dans localStorage');
+    }
+  }
 
   ngOnInit(): void {
+    // Souscrire aux changements d'utilisateur
     this.authSubscription = this.authService.currentUser$.subscribe(user => {
       this.isLoggedIn = !!user;
+      this.isStoreOwner = user?.role === 'STORE_OWNER';
+      
+      // Journalisation limitée pour éviter de spammer la console
+      console.log('👤 Utilisateur connecté, rôle:', user?.role);
     });
 
     this.cartSubscription = this.cartService.getCart().subscribe((cart: Cart) => {
