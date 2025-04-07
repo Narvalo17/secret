@@ -18,7 +18,29 @@ export class ProductService {
   }
 
   getProductsByStore(storeId: number, page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
-    return this.http.get<any>(`${this.apiUrl}/store/${storeId}?page=${page}&size=${size}`);
+    console.log(`Appel API pour récupérer les produits du magasin ${storeId}, page ${page}, taille ${size}`);
+    return this.http.get<any>(`${this.apiUrl}/store/${storeId}?page=${page}&size=${size}`)
+      .pipe(
+        map(response => {
+          console.log('Réponse brute de l\'API getProductsByStore:', response);
+          
+          // Vérifier si la réponse est au format attendu
+          if (!response || typeof response !== 'object') {
+            console.error('Format de réponse invalide:', response);
+            return { content: [], totalElements: 0 };
+          }
+          
+          // Normaliser la réponse même si le format est légèrement différent
+          const content = Array.isArray(response.content) ? response.content : 
+                         (Array.isArray(response) ? response : []);
+          const totalElements = response.totalElements || content.length || 0;
+          
+          return { 
+            content, 
+            totalElements 
+          };
+        })
+      );
   }
 
   getProductById(id: number): Observable<Product> {

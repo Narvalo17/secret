@@ -38,8 +38,10 @@ export class StoreDetailComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.loadStore(Number(params['id']));
-        this.loadProducts(Number(params['id']));
+        const storeId = Number(params['id']);
+        console.log('Chargement du magasin avec ID:', storeId);
+        this.loadStore(storeId);
+        this.loadProducts(storeId);
       }
     });
   }
@@ -47,14 +49,36 @@ export class StoreDetailComponent implements OnInit {
   private loadStore(id: number): void {
     this.loading = true;
     this.storeService.getStoreById(id).subscribe({
-      next: (store) => {
-        if (store.success && store.data) {
-          this.store = store.data;
+      next: (response: any) => {
+        console.log('Réponse du magasin reçue:', response);
+        
+        // Vérifie si c'est un objet de réponse enveloppé (avec success et data) ou un objet magasin direct
+        if (response && typeof response === 'object') {
+          if (response.success && response.data) {
+            // Format {success: true, data: Store}
+            this.store = response.data;
+          } else if ('id' in response) {
+            // Format direct Store (avec un id)
+            this.store = response as Store;
+          } else {
+            console.error('Format de réponse non reconnu:', response);
+            this.error = true;
+            this.notificationService.error('Erreur lors du chargement du magasin: Format de réponse incorrect');
+          }
+          
+          if (this.store) {
+            console.log('Magasin chargé avec succès:', this.store);
+          }
+        } else {
+          console.error('Réponse de l\'API invalide:', response);
+          this.error = true;
+          this.notificationService.error('Erreur lors du chargement du magasin: Réponse invalide');
         }
+        
         this.loading = false;
       },
       error: (error: Error) => {
-        console.error('Error loading store:', error);
+        console.error('Erreur lors du chargement du magasin:', error);
         this.error = true;
         this.loading = false;
         this.notificationService.error('Erreur lors du chargement du magasin');
@@ -62,19 +86,30 @@ export class StoreDetailComponent implements OnInit {
     });
   }
 
-  private loadProducts(storeId: number): void {
+  public loadProducts(storeId: number): void {
     this.loading = true;
+    console.log('Chargement des produits du magasin:', storeId);
+    
     this.productService.getProductsByStore(storeId, this.currentPage, this.pageSize).subscribe({
       next: (response) => {
-        this.products = response.content.map(product => ({
-          ...product,
-          selectedQuantity: 1
-        }));
-        this.totalProducts = response.totalElements;
+        console.log('Produits reçus:', response);
+        
+        if (response && response.content) {
+          this.products = response.content.map(product => ({
+            ...product,
+            selectedQuantity: 1
+          }));
+          this.totalProducts = response.totalElements || 0;
+          console.log('Produits chargés:', this.products.length);
+        } else {
+          console.error('Format de réponse des produits incorrect:', response);
+          this.notificationService.error('Erreur de format dans la réponse des produits');
+        }
+        
         this.loading = false;
       },
       error: (error: Error) => {
-        console.error('Error loading products:', error);
+        console.error('Erreur lors du chargement des produits:', error);
         this.error = true;
         this.loading = false;
         this.notificationService.error('Erreur lors du chargement des produits');
@@ -111,13 +146,16 @@ export class StoreDetailComponent implements OnInit {
       storeId: this.store.id
     };
 
+    console.log('Ajout au panier:', cartItem);
+
     this.productService.addToCart(product.id, product.selectedQuantity).subscribe({
-      next: () => {
+      next: (response) => {
+        console.log('Réponse de l\'ajout au panier:', response);
         this.notificationService.success('Produit ajouté au panier');
         product.selectedQuantity = 1;
       },
       error: (error: Error) => {
-        console.error('Error adding to cart:', error);
+        console.error('Erreur lors de l\'ajout au panier:', error);
         this.notificationService.error('Erreur lors de l\'ajout au panier');
       }
     });

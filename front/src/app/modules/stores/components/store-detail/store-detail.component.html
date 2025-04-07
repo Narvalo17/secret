@@ -19,9 +19,29 @@
   </div>
 
   <div class="products-section">
-    <h2>Nos produits</h2>
+    <h2 class="products-title">Produits de {{ store.name }}</h2>
     
-    <div class="products-grid" *ngIf="products && products.length > 0">
+    <!-- Debugging info -->
+    <div class="debug-info" *ngIf="products">
+      <p>Nombre de produits chargés: {{ products.length }}</p>
+    </div>
+    
+    <!-- État de chargement des produits -->
+    <div class="loading-products" *ngIf="loading">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Chargement des produits...</p>
+    </div>
+    
+    <!-- Message d'erreur pour les produits -->
+    <div class="error-message" *ngIf="error && !loading">
+      <p>Une erreur est survenue lors du chargement des produits</p>
+      <button mat-button color="primary" (click)="loadProducts(store.id)">
+        Réessayer
+      </button>
+    </div>
+    
+    <!-- Grille de produits -->
+    <div class="products-grid" *ngIf="products && products.length > 0 && !loading">
       <div class="product-card" *ngFor="let product of products">
         <div class="product-image">
           <img [src]="getProductImageUrl(product)" [alt]="product.name">
@@ -54,20 +74,185 @@
       </div>
     </div>
 
-    <div class="no-products" *ngIf="!products || products.length === 0">
-      <p>Aucun produit disponible pour le moment.</p>
+    <div class="no-products" *ngIf="!loading && !error && (!products || products.length === 0)">
+      <p>Aucun produit disponible pour ce magasin.</p>
     </div>
   </div>
 </div>
 
-<div class="loading-container" *ngIf="loading">
+<div class="loading-container" *ngIf="loading && !store">
   <mat-spinner></mat-spinner>
   <p>Chargement du magasin...</p>
 </div>
 
-<div class="error-container" *ngIf="error">
+<div class="error-container" *ngIf="error && !loading && !store">
   <p>Une erreur est survenue lors du chargement des données</p>
   <button mat-raised-button color="primary" routerLink="/stores">
     Retour aux magasins
   </button>
-</div> 
+</div>
+
+<style>
+.products-title {
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #2c3e50;
+  border-bottom: 2px solid #4CAF50;
+  padding-bottom: 0.5rem;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.product-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: white;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.product-image {
+  height: 180px;
+  overflow: hidden;
+}
+
+.product-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-info {
+  padding: 1rem;
+}
+
+.product-info h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.product-info .description {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.category-badge {
+  display: inline-block;
+  background: #4CAF50;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.price-info {
+  margin: 0.5rem 0;
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #2c3e50;
+}
+
+.stock-info {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.low-stock {
+  color: #ff9800;
+}
+
+.out-of-stock {
+  color: #f44336;
+}
+
+.product-actions {
+  padding: 1rem;
+  background: #f9f9f9;
+  border-top: 1px solid #eee;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+}
+
+.quantity-selector button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.quantity-selector button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.quantity-selector input {
+  width: 50px;
+  text-align: center;
+  margin: 0 0.5rem;
+  padding: 0.3rem 0;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.add-to-cart {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.add-to-cart:hover {
+  background: #3e8e41;
+}
+
+.add-to-cart:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.debug-info {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: #f8f9fa;
+  border: 1px dashed #dee2e6;
+  border-radius: 4px;
+  font-family: monospace;
+}
+</style> 
