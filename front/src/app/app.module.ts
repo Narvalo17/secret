@@ -12,12 +12,14 @@ import { HomeModule } from './modules/home/home.module';
 import { SharedModule } from './shared/shared.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { MatIconModule } from '@angular/material/icon';
+import { ShoppingCartComponent } from './modules/shopping-cart.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     NavbarComponent,
-    FooterComponent
+    FooterComponent,
+    ShoppingCartComponent
   ],
   imports: [
     BrowserModule,

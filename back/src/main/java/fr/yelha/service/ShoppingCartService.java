@@ -56,19 +56,31 @@ public class ShoppingCartService {
                     return shoppingCartRepository.save(newCart);
                 });
         
-        ShoppingCartDetail cartItem = cart.getItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElseGet(() -> {
-                    ShoppingCartDetail newItem = new ShoppingCartDetail();
-                    newItem.setShoppingCart(cart);
-                    newItem.setProduct(product);
-                    newItem.setQuantity(0);
-                    return newItem;
-                });
+        // Vérifier si le produit existe déjà dans le panier
+        boolean productExistsInCart = false;
+        ShoppingCartDetail cartItem = null;
         
-        cartItem.setQuantity(cartItem.getQuantity() + quantity);
-        cart.addItem(cartItem);
+        for (ShoppingCartDetail item : cart.getItems()) {
+            if (item.getProduct().getId().equals(productId)) {
+                cartItem = item;
+                productExistsInCart = true;
+                break;
+            }
+        }
+        
+        // Si le produit n'existe pas déjà dans le panier, créer un nouvel élément
+        if (!productExistsInCart) {
+            cartItem = new ShoppingCartDetail();
+            cartItem.setShoppingCart(cart);
+            cartItem.setProduct(product);
+            // Initialiser directement avec la quantité fournie au lieu de 0
+            cartItem.setQuantity(quantity);
+            cart.addItem(cartItem);
+        } else {
+            // Si le produit existe déjà, mettre à jour la quantité
+            int newQuantity = cartItem.getQuantity() + quantity;
+            cartItem.setQuantity(newQuantity);
+        }
         
         return convertToDto(shoppingCartRepository.save(cart));
     }

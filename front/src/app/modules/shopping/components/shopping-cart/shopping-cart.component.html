@@ -21,31 +21,30 @@
     <div *ngIf="!loading && cartItems.length > 0" class="cart-items">
       <div class="cart-item" *ngFor="let item of cartItems">
         <div class="item-image">
-          <img [src]="getProductImageUrl(item)" [alt]="item.name">
+          <img [src]="getProductImageUrl(item)" [alt]="item.productName || 'Image produit'">
         </div>
         <div class="item-details">
-          <h3>{{ item.name }}</h3>
-          <p class="description">{{ item.description }}</p>
-          <p class="price">{{ formatPrice(item.price || 0) }}</p>
+          <h3>{{ item.productName }}</h3>
+          <p class="price">{{ formatPrice(item.productPrice || 0) }}</p>
         </div>
         <div class="item-quantity">
           <button class="btn btn-sm" 
-                  (click)="updateQuantity(item.id || 0, (item.quantity || 1) - 1)"
+                  (click)="updateQuantity(item.productId, (item.quantity || 1) - 1)"
                   [disabled]="(item.quantity || 0) <= 1 || loading">
             <i class="fas fa-minus"></i>
           </button>
           <span>{{ item.quantity || 1 }}</span>
           <button class="btn btn-sm" 
-                  (click)="updateQuantity(item.id || 0, (item.quantity || 1) + 1)"
+                  (click)="updateQuantity(item.productId, (item.quantity || 1) + 1)"
                   [disabled]="loading">
             <i class="fas fa-plus"></i>
           </button>
         </div>
         <div class="item-total">
-          {{ formatPrice((item.price || 0) * (item.quantity || 1)) }}
+          {{ formatPrice((item.productPrice || 0) * (item.quantity || 1)) }}
         </div>
         <button class="btn btn-danger btn-sm" 
-                (click)="removeItem(item.id || 0)"
+                (click)="removeItem(item.productId)"
                 [disabled]="loading">
           <i class="fas fa-trash"></i>
         </button>

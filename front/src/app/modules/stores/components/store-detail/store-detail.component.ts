@@ -130,33 +130,57 @@ export class StoreDetailComponent implements OnInit {
   }
 
   addToCart(product: Product & { selectedQuantity: number }): void {
-    if (!product.selectedQuantity || product.selectedQuantity < 1) {
-      this.notificationService.error('Veuillez sélectionner une quantité valide');
+    if (!product || !product.id) {
+      this.notificationService.error('Erreur : informations du produit manquantes');
       return;
     }
 
-    if (!this.store || !product.id) {
-      this.notificationService.error('Erreur : informations du produit ou du magasin manquantes');
+    if (!this.store) {
+      this.notificationService.error('Erreur : informations du magasin manquantes');
       return;
     }
 
-    const cartItem: CartItemDto = {
+    // S'assurer que la quantité est un entier valide strictement supérieur à 0
+    const quantity = Math.max(1, Math.round(Number(product.selectedQuantity)));
+    
+    // Log détaillé pour comprendre le problème
+    console.log(`Type des données avant conversion:
+      - productId: ${typeof product.id} (${product.id})
+      - selectedQuantity: ${typeof product.selectedQuantity} (${product.selectedQuantity})
+      - après conversion: ${typeof quantity} (${quantity})
+    `);
+    
+    // Collecter les données pour le débogage
+    const cartItem = {
       productId: product.id,
-      quantity: product.selectedQuantity,
+      quantity: quantity,
       storeId: this.store.id
     };
 
     console.log('Ajout au panier:', cartItem);
 
-    this.productService.addToCart(product.id, product.selectedQuantity).subscribe({
+    // Appeler le service avec les bons paramètres
+    this.productService.addToCart(product.id, quantity).subscribe({
       next: (response) => {
         console.log('Réponse de l\'ajout au panier:', response);
-        this.notificationService.success('Produit ajouté au panier');
-        product.selectedQuantity = 1;
+        this.notificationService.success(`${product.name} ajouté au panier`);
+        product.selectedQuantity = 1;  // Réinitialiser la quantité
       },
-      error: (error: Error) => {
+      error: (error: any) => {
         console.error('Erreur lors de l\'ajout au panier:', error);
-        this.notificationService.error('Erreur lors de l\'ajout au panier');
+        
+        // Extraire le message d'erreur du serveur pour l'afficher à l'utilisateur
+        if (error && error.error) {
+          if (error.error.message) {
+            this.notificationService.error(`Erreur: ${error.error.message}`);
+          } else if (typeof error.error === 'string') {
+            this.notificationService.error(`Erreur: ${error.error}`);
+          } else {
+            this.notificationService.error(`Erreur lors de l'ajout au panier (${error.status})`);
+          }
+        } else {
+          this.notificationService.error('Erreur lors de l\'ajout au panier');
+        }
       }
     });
   }

@@ -1,9 +1,12 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { Product, ProductResponse, ProductFilter } from '../models/product.model';
 import { environment } from '../../../environments/environment';
-import { map } from 'rxjs/operators';
+import { map, catchError } from 'rxjs/operators';
+import { AuthService } from './auth.service';
+import { NotificationService } from './notification.service';
+import { ShoppingCartService } from './shopping-cart.service';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +14,12 @@ import { map } from 'rxjs/operators';
 export class ProductService {
   private readonly apiUrl = `${environment.apiUrl}/products`;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private notificationService: NotificationService,
+    private injector: Injector
+  ) {}
 
   getAllProducts(page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
     return this.http.get<any>(`${this.apiUrl}?page=${page}&size=${size}`);
@@ -87,6 +95,23 @@ export class ProductService {
 
   // Méthode pour ajouter un produit au panier
   addToCart(productId: number, quantity: number = 1): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/shopping-cart/add`, { productId, quantity });
+    // Vérifier si l'utilisateur est connecté
+    const currentUser = this.authService.getCurrentUser();
+    
+    if (!currentUser || !currentUser.id) {
+      this.notificationService.warning('Veuillez vous connecter pour ajouter des produits au panier');
+      return throwError(() => new Error('Utilisateur non connecté'));
+    }
+    
+    const userId = currentUser.id;
+    
+    console.log(`🛒 Ajout au panier via ProductService: 👤 userId=${userId}, 📦 productId=${productId}, 🔢 quantity=${quantity}`);
+    
+    // On utilise le service ShoppingCartService pour garder la cohérence
+    // Importer le service avec l'injecteur pour éviter les dépendances circulaires
+    const shoppingCartService = this.injector.get(ShoppingCartService);
+    
+    // Ajouter l'article et s'assurer que le sujet qui diffuse les mises à jour du panier est notifié
+    return shoppingCartService.addToCart(productId, quantity);
   }
 } 

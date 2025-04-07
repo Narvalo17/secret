@@ -27,6 +27,7 @@ public class ShoppingController {
     @ApiResponse(responseCode = "200", description = "Produit ajouté avec succès")
     @ApiResponse(responseCode = "400", description = "Données invalides")
     @ApiResponse(responseCode = "404", description = "Produit non trouvé")
+    
     @PostMapping("/cart/items/user/{userId}")
     public ResponseEntity<ShoppingCartDto> addItemToCart(
             @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId,
