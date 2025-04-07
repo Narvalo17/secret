@@ -1,5 +1,6 @@
 package fr.yelha.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "favorite_stores")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class FavoriteStore {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,10 +19,12 @@ public class FavoriteStore {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties("favoriteStores")
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
+    @JsonIgnoreProperties("favoriteStores")
     private Store store;
 
     @CreationTimestamp

@@ -4,6 +4,7 @@ import fr.yelha.dto.StoreDto;
 import fr.yelha.model.Store;
 import fr.yelha.model.User;
 import fr.yelha.model.Category;
+import fr.yelha.model.Role;
 import fr.yelha.repository.StoreRepository;
 import fr.yelha.repository.UserRepository;
 import fr.yelha.repository.CategoryRepository;
@@ -22,12 +23,19 @@ public class StoreService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
 
-    public StoreDto createStore(StoreDto storeDto, Long userId) {
-        User owner = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("Utilisateur non trouvé"));
-
+    public StoreDto createStore(StoreDto storeDto) {
         Store store = new Store();
         updateStoreFromDto(store, storeDto);
+        
+        // Créer un nouvel utilisateur à partir des données du magasin
+        User owner = new User();
+        owner.setFirstName(storeDto.getFirstName());
+        owner.setLastName(storeDto.getLastName());
+        owner.setEmail(storeDto.getEmail());
+        owner.setPassword(storeDto.getPassword());
+        owner.setRole(Role.STORE_OWNER);
+        owner = userRepository.save(owner);
+        
         store.setOwner(owner);
 
         if (storeDto.getCategoryId() != null) {
@@ -103,6 +111,12 @@ public class StoreService {
         store.setEmail(dto.getEmail());
         store.setWebsite(dto.getWebsite());
         store.setActive(dto.isActive());
+        
+        // Mise à jour des nouveaux champs
+        store.setFirstName(dto.getFirstName());
+        store.setLastName(dto.getLastName());
+        store.setPassword(dto.getPassword());
+        store.setConfirmPassword(dto.getConfirmPassword());
     }
 
     private StoreDto convertToDto(Store store) {
@@ -122,6 +136,13 @@ public class StoreService {
         dto.setActive(store.isActive());
         dto.setCreatedAt(store.getCreatedAt());
         dto.setUpdatedAt(store.getUpdatedAt());
+        
+        // Ajout des nouveaux champs
+        dto.setFirstName(store.getFirstName());
+        dto.setLastName(store.getLastName());
+        dto.setPassword(store.getPassword());
+        dto.setConfirmPassword(store.getConfirmPassword());
+        
         return dto;
     }
 } 

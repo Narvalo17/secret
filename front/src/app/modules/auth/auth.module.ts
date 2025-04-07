@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatCardModule } from '@angular/material/card';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSelectModule } from '@angular/material/select';
 import { SharedModule } from '@shared/shared.module';
 
 import { LoginComponent } from './components/login/login.component';
@@ -49,6 +51,8 @@ const routes: Routes = [
     MatButtonModule,
     MatProgressSpinnerModule,
     MatCardModule,
+    MatSlideToggleModule,
+    MatSelectModule,
     SharedModule
   ]
 })

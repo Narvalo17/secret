@@ -1,5 +1,6 @@
 package fr.yelha.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Entity
 @Table(name = "stores")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Store {
     
     @Id
@@ -32,18 +34,32 @@ public class Store {
 
     private String imageUrl;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id", nullable = false)
+    @JsonIgnoreProperties({"stores", "favoriteStores", "hibernateLazyInitializer", "handler"})
     private User owner;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonIgnoreProperties({"stores", "products", "hibernateLazyInitializer", "handler"})
     private Category category;
 
     private String address;
     private String phone;
     private String email;
     private String website;
+
+    @Column(nullable = false)
+    private String firstName;
+    
+    @Column(nullable = false)
+    private String lastName;
+    
+    @Column(nullable = false)
+    private String password;
+    
+    @Column(nullable = false)
+    private String confirmPassword;
 
     private boolean isActive = true;
 

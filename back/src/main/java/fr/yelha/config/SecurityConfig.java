@@ -18,7 +18,7 @@ public class SecurityConfig {
         "/api/swagger-ui/**",
         "/api/swagger-ui.html",
         "/api/api-docs/**",
-        "/api/h2-console/**",
+        "/h2-console/**",
         "/api/error",
         "/v3/api-docs/**",
         "/swagger-ui/**",
@@ -32,7 +32,7 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .headers(headers -> headers
                 .frameOptions()
-                .disable()
+                .sameOrigin()
             )
             .sessionManagement(session -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

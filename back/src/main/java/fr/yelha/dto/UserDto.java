@@ -18,9 +18,16 @@ public class UserDto {
 
     @NotBlank(message = "Le mot de passe est obligatoire")
     private String password;
+    
+    @NotBlank(message = "La confirmation du mot de passe est obligatoire")
+    private String confirmPassword;
 
+    @NotBlank(message = "Le prénom est obligatoire")
     private String firstName;
+    
+    @NotBlank(message = "Le nom est obligatoire")
     private String lastName;
+    
     private String phoneNumber;
     private boolean active;
     private boolean emailVerified;

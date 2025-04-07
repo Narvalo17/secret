@@ -7,9 +7,6 @@ export interface User {
   phoneNumber: string;
   emailVerified?: boolean;
   role?: string;
-  street?: string;
-  city?: string;
-  postalCode?: string;
 }
 
 export interface UserResponse {

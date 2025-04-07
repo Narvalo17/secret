@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
@@ -8,10 +8,11 @@ import { AuthService } from '@core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   loading = false;
   error = '';
+  redirectUrl: string | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -24,6 +25,11 @@ export class LoginComponent {
     });
   }
 
+  ngOnInit() {
+    // Récupérer l'URL de redirection s'il existe
+    this.redirectUrl = localStorage.getItem('redirectAfterLogin');
+  }
+
   onSubmit() {
     if (this.loginForm.valid) {
       this.loading = true;
@@ -33,7 +39,10 @@ export class LoginComponent {
       
       this.authService.login(email, password).subscribe({
         next: () => {
-          this.router.navigate(['/']);
+          // Rediriger vers l'URL sauvegardée ou la page d'accueil
+          const redirectTo = this.redirectUrl || '/';
+          localStorage.removeItem('redirectAfterLogin'); // Nettoyer l'URL de redirection
+          this.router.navigate([redirectTo]);
         },
         error: (err) => {
           this.error = err.error?.message || 'Une erreur est survenue lors de la connexion';

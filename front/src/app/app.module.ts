@@ -11,6 +11,7 @@ import { FooterComponent } from './components/footer/footer.component';
 import { HomeModule } from './modules/home/home.module';
 import { SharedModule } from './shared/shared.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { MatIconModule } from '@angular/material/icon';
 
 @NgModule({
   declarations: [
@@ -27,7 +28,8 @@ import { AdminModule } from './modules/admin/admin.module';
     AppRoutingModule,
     HomeModule,
     SharedModule,
-    AdminModule
+    AdminModule,
+    MatIconModule
   ],
   providers: [],
   bootstrap: [AppComponent]

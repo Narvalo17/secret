@@ -22,14 +22,16 @@ import org.springframework.web.bind.annotation.*;
 public class StoreController {
     private final StoreService storeService;
 
-    @Operation(summary = "Créer un magasin", description = "Création d'un nouveau magasin")
+    @Operation(summary = "Créer un magasin", description = "Création d'un nouveau magasin avec les informations du propriétaire")
     @ApiResponse(responseCode = "200", description = "Magasin créé avec succès")
     @ApiResponse(responseCode = "400", description = "Données invalides")
-    @PostMapping("/user/{userId}")
-    public ResponseEntity<StoreDto> createStore(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId,
-            @Valid @RequestBody StoreDto storeDto) {
-        return ResponseEntity.ok(storeService.createStore(storeDto, userId));
+    @PostMapping
+    public ResponseEntity<StoreDto> createStore(@Valid @RequestBody StoreDto storeDto) {
+        // Vérification que les mots de passe correspondent
+        if (!storeDto.getPassword().equals(storeDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Les mots de passe ne correspondent pas");
+        }
+        return ResponseEntity.ok(storeService.createStore(storeDto));
     }
 
     @Operation(summary = "Mettre à jour un magasin", description = "Modification d'un magasin existant")
@@ -40,6 +42,10 @@ public class StoreController {
     public ResponseEntity<StoreDto> updateStore(
             @Parameter(description = "ID du magasin") @PathVariable Long id,
             @Valid @RequestBody StoreDto storeDto) {
+        // Vérification que les mots de passe correspondent
+        if (storeDto.getPassword() != null && !storeDto.getPassword().equals(storeDto.getConfirmPassword())) {
+            throw new IllegalArgumentException("Les mots de passe ne correspondent pas");
+        }
         return ResponseEntity.ok(storeService.updateStore(id, storeDto));
     }
 

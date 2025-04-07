@@ -28,29 +28,50 @@
     </form>
   </div>
 
-  <div class="stores-content" [class.is-loading]="loading">
+  <div class="stores-content" [class.is-loading]="isLoading">
     <!-- Loading State -->
-    <div class="loading-state" *ngIf="loading">
+    <div class="loading-state" *ngIf="isLoading">
       <div class="spinner">
         <i class="fas fa-spinner fa-spin"></i>
       </div>
       <p>Chargement des magasins...</p>
     </div>
 
+    <!-- Error State -->
+    <div class="error-state" *ngIf="error && !isLoading">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>{{ error }}</p>
+    </div>
+
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!loading && filteredStores.length === 0">
+    <div class="empty-state" *ngIf="!isLoading && !error && filteredStores.length === 0">
       <i class="fas fa-store-alt-slash"></i>
       <h3>Aucun magasin trouvé</h3>
       <p>Essayez de modifier vos critères de recherche</p>
     </div>
 
+    <!-- Loading Favorites State -->
+    <div class="loading-favorites-state" *ngIf="isLoadingFavorites">
+      <div class="spinner">
+        <i class="fas fa-spinner fa-spin"></i>
+      </div>
+      <p>Chargement des favoris...</p>
+    </div>
+
+    <!-- No Favorites State -->
+    <div class="empty-favorites-state" *ngIf="!isLoadingFavorites && filterForm.get('category')?.value === 'favorites' && filteredStores.length === 0">
+      <i class="fas fa-heart-broken"></i>
+      <h3>Vous n'avez pas de magasins en favoris</h3>
+      <p>Ajoutez des magasins à vos favoris pour les retrouver facilement</p>
+    </div>
+
     <!-- Stores Grid -->
-    <div class="stores-grid" *ngIf="!loading && filteredStores.length > 0">
+    <div class="stores-grid" *ngIf="!isLoading && !isLoadingFavorites && filteredStores.length > 0">
       <div class="store-card" *ngFor="let store of filteredStores">
         <div class="store-header">
-          <div class="store-image" [style.backgroundImage]="'url(' + (store.imageUrl || '/assets/images/default-store.jpg') + ')'">
+          <div class="store-image" [style.backgroundImage]="'url(' + (store.image_url || '/assets/images/default-store.jpg') + ')'">
             <button class="favorite-btn" (click)="toggleFavorite(store)" [class.is-favorite]="store.isFavorite">
-              <i class="fas" [class.fa-heart]="store.isFavorite" [class.fa-heart-o]="!store.isFavorite"></i>
+              <mat-icon>{{ store.isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
             </button>
           </div>
         </div>

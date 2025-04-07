@@ -6,7 +6,7 @@
   <div class="stores-grid" *ngIf="!isLoading && !error">
     <div *ngFor="let store of favoriteStores" class="store-card">
       <div class="store-image">
-        <img [src]="store.imageUrl" [alt]="store.name">
+        <img [src]="store.image_url || '/assets/images/default-store.jpg'" [alt]="store.name">
         <button class="favorite-btn" (click)="removeFromFavorites(store)">
           <i class="fas fa-heart"></i>
         </button>

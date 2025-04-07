@@ -23,7 +23,7 @@ import { Subscription } from 'rxjs';
   styles: [`
     .notification-container {
       position: fixed;
-      top: 20px;
+      top: 120px;
       right: 20px;
       z-index: 1000;
     }

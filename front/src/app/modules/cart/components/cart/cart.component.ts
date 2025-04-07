@@ -3,6 +3,7 @@ import { CartService } from '@core/services/cart.service';
 import { Cart, CartItem } from '@core/models/cart.model';
 import { NotificationService } from '@core/services/notification.service';
 import { Router } from '@angular/router';
+import { AuthService } from '@core/services/auth.service';
 
 @Component({
   selector: 'app-cart',
@@ -15,7 +16,8 @@ export class CartComponent implements OnInit {
   constructor(
     private cartService: CartService,
     private notificationService: NotificationService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -42,6 +44,14 @@ export class CartComponent implements OnInit {
   checkout(): void {
     if (!this.cart || this.cart.items.length === 0) {
       this.notificationService.warning('Votre panier est vide');
+      return;
+    }
+
+    if (!this.authService.isAuthenticated()) {
+      this.notificationService.info('Veuillez vous connecter pour continuer');
+      // Sauvegarder l'URL de redirection
+      localStorage.setItem('redirectAfterLogin', '/checkout');
+      this.router.navigate(['/auth/login']);
       return;
     }
     

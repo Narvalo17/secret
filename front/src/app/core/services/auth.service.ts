@@ -1,18 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject, from } from 'rxjs';
+import { tap, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface User {
   id?: number;
   email: string;
   password?: string;
+  confirmPassword?: string;
   firstName: string;
   lastName: string;
   phoneNumber: string;
   emailVerified?: boolean;
   role?: string;
+}
+
+export interface Store {
+  name: string;
+  description: string;
+  address: string;
+  phone: string;
+  email: string;
+  website?: string;
+  category: string;
+  isActive: boolean;
+  ownerId?: number;
 }
 
 @Injectable({
@@ -22,6 +35,7 @@ export class AuthService {
   private apiUrl = 'http://localhost:8081/api';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
+  getToken: any;
 
   constructor(
     private http: HttpClient,
@@ -36,7 +50,13 @@ export class AuthService {
 
   login(email: string, password: string): Observable<any> {
     console.log('🚀 Envoi de la requête de connexion:', `${this.apiUrl}/users/login`);
-    return this.http.post(`${this.apiUrl}/users/login`, { email, password })
+    return this.http.post(`${this.apiUrl}/users/login`, { 
+      email, 
+      password,
+      confirmPassword: password, // Ajouter le champ confirmPassword requis par le backend
+      firstName: "User", // Ajouter un prénom temporaire
+      lastName: "User" // Ajouter un nom temporaire
+    })
       .pipe(
         tap((response: any) => {
           console.log('✅ Connexion réussie:', response);
@@ -49,15 +69,46 @@ export class AuthService {
       );
   }
 
-  register(userData: User): Observable<any> {
-    console.log('🚀 Envoi de la requête d\'inscription:', `${this.apiUrl}/users/register`);
-    console.log('📦 Données envoyées:', userData);
-    return this.http.post(`${this.apiUrl}/users/register`, userData)
-      .pipe(
-        tap((response: any) => {
-          console.log('✅ Inscription réussie:', response);
-        })
+  register(userData: User, storeData?: Store | null): Observable<any> {
+    console.log('🚀 Début de l\'inscription');
+    console.log('📦 Données utilisateur:', userData);
+
+    // Si c'est un commerçant, envoyer directement les données du magasin
+    if (storeData) {
+      console.log('🏪 Création d\'un magasin avec les données utilisateur');
+      const storePayload = {
+        name: storeData.name,
+        description: storeData.description,
+        address: storeData.address,
+        phone: storeData.phone,
+        email: storeData.email,
+        website: storeData.website || null,
+        category: storeData.category,
+        isActive: true,
+        // Ajouter les données utilisateur
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        password: userData.password,
+        confirmPassword: userData.password, // Utiliser le même mot de passe pour la confirmation
+        // Ajouter un ownerId temporaire (sera remplacé par le backend)
+        ownerId: 0
+      };
+      console.log('📦 Données magasin envoyées:', storePayload);
+      return this.http.post(`${this.apiUrl}/stores`, storePayload).pipe(
+        tap(store => console.log('✅ Magasin créé:', store))
       );
+    } else {
+      // Si ce n'est pas un commerçant, créer uniquement l'utilisateur
+      // Ajouter le champ confirmPassword requis par le backend
+      const userPayload = {
+        ...userData,
+        confirmPassword: userData.password // Utiliser le même mot de passe pour la confirmation
+      };
+      console.log('📦 Données utilisateur envoyées:', userPayload);
+      return this.http.post<User>(`${this.apiUrl}/users/register`, userPayload).pipe(
+        tap(response => console.log('✅ Utilisateur créé:', response))
+      );
+    }
   }
 
   logout(): void {
@@ -76,8 +127,17 @@ export class AuthService {
     return currentUser?.role === 'ADMIN';
   }
 
+  isStoreOwner(): boolean {
+    const currentUser = this.currentUserSubject.value;
+    return currentUser?.role === 'STORE_OWNER';
+  }
+
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
+  }
+
+  getUserRole(): string | null {
+    return this.currentUserSubject.value?.role || null;
   }
 
   updateCurrentUser(user: User): void {

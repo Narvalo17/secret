@@ -5,7 +5,12 @@
     </mat-card-header>
 
     <mat-card-content>
+      <mat-slide-toggle (change)="toggleStoreOwner()" class="store-owner-toggle">
+        Je suis un commerçant
+      </mat-slide-toggle>
+
       <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <h3>Informations personnelles</h3>
         <div class="form-row">
           <mat-form-field appearance="outline">
             <mat-label>Prénom</mat-label>
@@ -50,9 +55,68 @@
           <mat-error *ngIf="registerForm.errors?.['mismatch']">Les mots de passe ne correspondent pas</mat-error>
         </mat-form-field>
 
+        <!-- Formulaire du magasin -->
+        <div *ngIf="isStoreOwner" class="store-form" [formGroup]="storeForm">
+          <h3>Informations du magasin</h3>
+          
+          <mat-form-field appearance="outline">
+            <mat-label>Nom du magasin</mat-label>
+            <input matInput formControlName="name" placeholder="Nom de votre magasin">
+            <mat-error *ngIf="storeForm.get('name')?.errors?.['required']">Le nom du magasin est requis</mat-error>
+            <mat-error *ngIf="storeForm.get('name')?.errors?.['minlength']">Le nom doit contenir au moins 2 caractères</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Décrivez votre magasin" rows="3"></textarea>
+            <mat-error *ngIf="storeForm.get('description')?.errors?.['required']">La description est requise</mat-error>
+            <mat-error *ngIf="storeForm.get('description')?.errors?.['minlength']">La description doit contenir au moins 10 caractères</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Adresse</mat-label>
+            <input matInput formControlName="address" placeholder="Adresse du magasin">
+            <mat-error *ngIf="storeForm.get('address')?.errors?.['required']">L'adresse est requise</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Téléphone du magasin</mat-label>
+            <input matInput formControlName="phone" placeholder="0123456789">
+            <mat-error *ngIf="storeForm.get('phone')?.errors?.['required']">Le numéro de téléphone est requis</mat-error>
+            <mat-error *ngIf="storeForm.get('phone')?.errors?.['pattern']">Veuillez entrer un numéro de téléphone valide</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Email du magasin</mat-label>
+            <input matInput formControlName="email" type="email" placeholder="magasin@email.com">
+            <mat-error *ngIf="storeForm.get('email')?.errors?.['required']">L'email est requis</mat-error>
+            <mat-error *ngIf="storeForm.get('email')?.errors?.['email']">Veuillez entrer une adresse email valide</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Site web</mat-label>
+            <input matInput formControlName="website" placeholder="www.votremagasin.com">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Catégorie</mat-label>
+            <mat-select formControlName="category">
+              <mat-option value="Boulangeries">Boulangeries</mat-option>
+              <mat-option value="Restaurants">Restaurants</mat-option>
+              <mat-option value="Supermarchés">Supermarchés</mat-option>
+              <mat-option value="Épiceries">Épiceries</mat-option>
+              <mat-option value="Primeurs">Primeurs</mat-option>
+              <mat-option value="Pâtisseries">Pâtisseries</mat-option>
+              <mat-option value="Traiteurs">Traiteurs</mat-option>
+              <mat-option value="Autres">Autres</mat-option>
+            </mat-select>
+            <mat-error *ngIf="storeForm.get('category')?.errors?.['required']">La catégorie est requise</mat-error>
+          </mat-form-field>
+        </div>
+
         <div class="error-message" *ngIf="error">{{ error }}</div>
 
-        <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid || loading">
+        <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid || (isStoreOwner && storeForm.invalid) || loading">
           <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
           <span *ngIf="!loading">S'inscrire</span>
         </button>

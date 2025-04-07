@@ -3,29 +3,31 @@ import { Product } from './product.model';
 export interface Store {
   id: number;
   name: string;
-  description: string;
-  category: string;
-  location: string;
+  description?: string;
   address: string;
-  openingHours: string;
-  contactEmail: string;
-  contactPhone: string;
-  email?: string;
   phone?: string;
-  imageUrl?: string;
+  email?: string;
+  website?: string;
+  category?: string;
+  image_url?: string;
   rating?: number;
   distance?: number;
   isFavorite?: boolean;
-  additionalInfo?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  products: Product[];
+  is_active?: boolean;
 }
 
 export interface StoreResponse {
-  success: boolean;
-  message: string;
-  data?: Store[];
+  content: Store[];
+  pageable: any;
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  sort: any;
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 
 export interface CreateStoreDto {

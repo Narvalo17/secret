@@ -1,8 +1,8 @@
-<div class="navbar-wrapper">
+<div class="navbar-wrapper" [class.scrolled]="isScrolled">
   <nav class="navbar">
     <div class="navbar-brand">
       <a routerLink="/" class="logo">
-        <i class="fas fa-leaf"></i>
+        <mat-icon>eco</mat-icon>
         <span class="logo-text">YELHA</span>
       </a>
       <span class="subtitle">Anti-gaspillage alimentaire</span>
@@ -10,18 +10,18 @@
     
     <div class="navbar-menu" [class.is-active]="isMenuOpen">
       <a routerLink="/stores" routerLinkActive="active" class="nav-link" [routerLinkActiveOptions]="{exact: false}">
-        <i class="fas fa-store"></i>
+        <mat-icon>store</mat-icon>
         <span>Magasins</span>
       </a>
       
       <a routerLink="/products" routerLinkActive="active" class="nav-link" [routerLinkActiveOptions]="{exact: false}">
-        <i class="fas fa-box"></i>
+        <mat-icon>inventory_2</mat-icon>
         <span>Produits</span>
       </a>
       
       <a routerLink="/cart" routerLinkActive="active" class="nav-link cart-link" [routerLinkActiveOptions]="{exact: true}">
         <div class="cart-icon">
-          <i class="fas fa-shopping-cart"></i>
+          <mat-icon>shopping_cart</mat-icon>
           <span class="cart-count" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
         </div>
         <span>Panier</span>
@@ -32,35 +32,35 @@
       <div class="user-menu">
         <div *ngIf="!isLoggedIn">
           <a routerLink="/auth/login" class="auth-link">
-            <i class="fas fa-sign-in-alt"></i>
+            <mat-icon>login</mat-icon>
             Connexion
           </a>
           <a routerLink="/auth/register" class="auth-link">
-            <i class="fas fa-user-plus"></i>
+            <mat-icon>person_add</mat-icon>
             Inscription
           </a>
         </div>
         <div *ngIf="isLoggedIn">
           <button class="user-btn" (click)="toggleUserMenu()">
-            <i class="fas fa-user"></i>
+            <mat-icon>person</mat-icon>
             <span>Mon Compte</span>
           </button>
           <div class="dropdown-menu" *ngIf="isUserMenuOpen">
             <a routerLink="/user">
-              <i class="fas fa-user-circle"></i>
+              <mat-icon>account_circle</mat-icon>
               Mon Profil
             </a>
             <a routerLink="/orders">
-              <i class="fas fa-shopping-bag"></i>
+              <mat-icon>shopping_bag</mat-icon>
               Mes Commandes
             </a>
             <a routerLink="/favorites">
-              <i class="fas fa-heart"></i>
+              <mat-icon>favorite</mat-icon>
               Mes Favoris
             </a>
             <div class="dropdown-divider"></div>
             <a (click)="logout()">
-              <i class="fas fa-sign-out-alt"></i>
+              <mat-icon>logout</mat-icon>
               Déconnexion
             </a>
           </div>

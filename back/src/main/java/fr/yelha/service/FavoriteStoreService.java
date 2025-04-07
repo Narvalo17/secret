@@ -28,6 +28,11 @@ public class FavoriteStoreService {
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new RuntimeException("Magasin non trouvé avec l'ID : " + storeId));
 
+        // Vérifier si le favori existe déjà
+        if (favoriteStoreRepository.existsByStoreIdAndUserId(storeId, userId)) {
+            throw new RuntimeException("Ce magasin est déjà dans vos favoris");
+        }
+
         FavoriteStore favoriteStore = new FavoriteStore();
         favoriteStore.setUser(user);
         favoriteStore.setStore(store);
@@ -40,6 +45,10 @@ public class FavoriteStoreService {
     }
 
     public List<FavoriteStore> getFavoriteStoresByUser(Long userId) {
+        // Vérifier si l'utilisateur existe
+        userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + userId));
+            
         return favoriteStoreRepository.findByUserId(userId);
     }
 

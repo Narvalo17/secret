@@ -1,9 +1,11 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { Store } from '@core/models/store.model';
+import { Store, StoreResponse } from '@core/models/store.model';
 import { StoreService } from '@core/services/store.service';
 import { NotificationService } from '@core/services/notification.service';
-import { Subscription } from 'rxjs';
+import { AuthService } from '@core/services/auth.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subscription, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-stores-list',
@@ -13,9 +15,14 @@ import { Subscription } from 'rxjs';
 export class StoresListComponent implements OnInit, OnDestroy {
   stores: Store[] = [];
   filteredStores: Store[] = [];
-  loading = false;
+  isLoading = false;
+  isLoadingFavorites = false;
+  error: string | null = null;
+  totalElements = 0;
   filterForm!: FormGroup;
+  mode: 'merchant' | 'customer' = 'customer';
   private filterSubscription?: Subscription;
+  private destroy$ = new Subject<void>();
 
   categories: string[] = [
     'Boulangeries',
@@ -31,14 +38,21 @@ export class StoresListComponent implements OnInit, OnDestroy {
   constructor(
     private storeService: StoreService,
     private fb: FormBuilder,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private authService: AuthService,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     this.initializeForm();
+    this.mode = this.route.snapshot.data['mode'] || 'customer';
   }
 
   ngOnInit(): void {
     this.loadStores();
     this.setupFilterSubscription();
+    if (this.authService.isAuthenticated()) {
+      this.loadFavoriteStates();
+    }
   }
 
   ngOnDestroy(): void {
@@ -62,22 +76,32 @@ export class StoresListComponent implements OnInit, OnDestroy {
   }
 
   private loadStores(): void {
-    this.loading = true;
-    this.storeService.getAllStores().subscribe({
+    this.isLoading = true;
+    this.error = null;
+
+    const filters: any = {};
+    if (this.mode === 'merchant') {
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser?.id) {
+        filters.ownerId = currentUser.id;
+      }
+    }
+
+    this.storeService.getAllStores(filters).subscribe({
       next: (response) => {
-        if (response.success && response.data) {
-          this.stores = response.data;
-          this.applyFilters();
-        } else {
-          this.notificationService.error('Erreur lors du chargement des magasins');
+        this.stores = response.content;
+        this.totalElements = response.totalElements;
+        this.isLoading = false;
+
+        // Charger l'état des favoris si l'utilisateur est connecté
+        if (this.authService.isAuthenticated()) {
+          this.loadFavoriteStates();
         }
       },
       error: (error) => {
-        this.notificationService.error('Erreur lors du chargement des magasins');
         console.error('Error loading stores:', error);
-      },
-      complete: () => {
-        this.loading = false;
+        this.error = 'Erreur lors du chargement des magasins';
+        this.isLoading = false;
       }
     });
   }
@@ -122,28 +146,76 @@ export class StoresListComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleFavorite(store: Store): void {
-    if (!store) return;
+  private loadFavoriteStates(): void {
+    if (!this.authService.isAuthenticated()) {
+      return;
+    }
 
-    const action = store.isFavorite ? 
-      this.storeService.removeFromFavorites(store.id) :
-      this.storeService.addToFavorites(store.id);
+    this.isLoadingFavorites = true;
+    this.error = null;
 
-    action.subscribe({
-      next: () => {
-        store.isFavorite = !store.isFavorite;
-        const message = store.isFavorite ? 
-          'Magasin ajouté aux favoris' : 
-          'Magasin retiré des favoris';
-        this.notificationService.success(message);
+    this.storeService.getFavoriteStores().subscribe({
+      next: (response) => {
+        const favoriteStoreIds = new Set(response.content.map(store => store.id));
+        this.stores = this.stores.map(store => ({
+          ...store,
+          isFavorite: favoriteStoreIds.has(store.id)
+        }));
+        this.applyFilters();
+        this.isLoadingFavorites = false;
       },
       error: (error) => {
-        const message = store.isFavorite ?
-          'Erreur lors du retrait des favoris' :
-          'Erreur lors de l\'ajout aux favoris';
-        this.notificationService.error(message);
-        console.error('Error toggling favorite:', error);
+        console.error('Error loading favorite states:', error);
+        this.stores = this.stores.map(store => ({
+          ...store,
+          isFavorite: false
+        }));
+        this.applyFilters();
+        this.isLoadingFavorites = false;
       }
     });
+  }
+
+  toggleFavorite(store: Store): void {
+    if (!store?.id) {
+      this.notificationService.error('Impossible d\'ajouter ce magasin aux favoris');
+      return;
+    }
+
+    try {
+      const action = store.isFavorite ? 
+        this.storeService.removeFromFavorites(store.id) :
+        this.storeService.addToFavorites(store.id);
+
+      action.subscribe({
+        next: () => {
+          store.isFavorite = !store.isFavorite;
+          const message = store.isFavorite ? 
+            'Magasin ajouté aux favoris' : 
+            'Magasin retiré des favoris';
+          this.notificationService.success(message);
+        },
+        error: (error: any) => {
+          console.error('Error toggling favorite:', error);
+          if (error.message === 'Utilisateur non connecté') {
+            this.notificationService.error('Veuillez vous connecter pour ajouter des favoris');
+            this.router.navigate(['/auth/login']);
+          } else {
+            const message = store.isFavorite ?
+              'Erreur lors du retrait des favoris' :
+              'Erreur lors de l\'ajout aux favoris';
+            this.notificationService.error(message);
+          }
+        }
+      });
+    } catch (error: any) {
+      console.error('Error in toggleFavorite:', error);
+      if (error.message === 'Utilisateur non connecté') {
+        this.notificationService.error('Veuillez vous connecter pour ajouter des favoris');
+        this.router.navigate(['/auth/login']);
+      } else {
+        this.notificationService.error('Une erreur est survenue');
+      }
+    }
   }
 } 

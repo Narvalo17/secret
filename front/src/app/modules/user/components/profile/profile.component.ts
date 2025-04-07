@@ -27,9 +27,6 @@ export class ProfileComponent implements OnInit {
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', Validators.required],
-      street: [''],
-      city: [''],
-      postalCode: ['', [Validators.pattern(/^\d{5}$/)]],
       currentPassword: ['']
     });
   }
@@ -48,10 +45,7 @@ export class ProfileComponent implements OnInit {
             firstName: user.firstName,
             lastName: user.lastName,
             email: user.email,
-            phoneNumber: user.phoneNumber,
-            street: user.street,
-            city: user.city,
-            postalCode: user.postalCode
+            phoneNumber: user.phoneNumber
           });
         },
         error: (error: HttpErrorResponse) => {
@@ -85,14 +79,12 @@ export class ProfileComponent implements OnInit {
         return;
       }
 
+      // Mettre à jour les informations du profil
       const updateData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
-        street: formData.street,
-        city: formData.city,
-        postalCode: formData.postalCode,
         password: formData.currentPassword || ''
       };
 
@@ -100,7 +92,12 @@ export class ProfileComponent implements OnInit {
         next: (updatedUser) => {
           this.success = 'Profil mis à jour avec succès';
           this.isEditing = false;
+          // Mettre à jour les informations de l'utilisateur dans le service d'authentification
           this.authService.updateCurrentUser(updatedUser);
+          // Réinitialiser le champ de mot de passe
+          this.profileForm.patchValue({
+            currentPassword: ''
+          });
         },
         error: (error: HttpErrorResponse) => {
           console.error('Erreur lors de la mise à jour du profil:', error);

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { CartService } from '@core/services/cart.service';
@@ -16,6 +16,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
   isLoggedIn = false;
   cartItemCount = 0;
   private cartSubscription: Subscription | undefined;
+  private authSubscription: Subscription | undefined;
+  lastScrollTop = 0;
+  isScrolled = false;
 
   constructor(
     private authService: AuthService,
@@ -24,7 +27,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
+    this.authSubscription = this.authService.currentUser$.subscribe(user => {
       this.isLoggedIn = !!user;
     });
 
@@ -37,6 +40,22 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (this.cartSubscription) {
       this.cartSubscription.unsubscribe();
     }
+    if (this.authSubscription) {
+      this.authSubscription.unsubscribe();
+    }
+  }
+
+  @HostListener('window:scroll', ['$event'])
+  onScroll() {
+    const st = window.pageYOffset || document.documentElement.scrollTop;
+    if (st > this.lastScrollTop) {
+      // Scroll vers le bas
+      this.isScrolled = true;
+    } else {
+      // Scroll vers le haut
+      this.isScrolled = false;
+    }
+    this.lastScrollTop = st <= 0 ? 0 : st;
   }
 
   toggleUserMenu() {
@@ -45,7 +64,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   logout() {
     this.authService.logout();
-    this.router.navigate(['/auth/login']);
     this.isUserMenuOpen = false;
+    this.router.navigate(['/auth/login']);
   }
 } 
