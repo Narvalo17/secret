@@ -62,14 +62,14 @@ export class CartComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateItemQuantity(itemId: string, newQuantity: number): void {
+  updateItemQuantity(item: CartItem, newQuantity: number): void {
     if (newQuantity < 1) {
-      this.removeItem(itemId);
+      this.removeItem(item);
       return;
     }
     
     this.loading = true;
-    this.cartService.updateCartItem(Number(itemId), newQuantity).subscribe({
+    this.cartService.updateCartItem(item.productId, newQuantity).subscribe({
       next: () => {
         console.log('✅ Quantité mise à jour avec succès');
         this.loadCart(); // Recharger le panier pour avoir les données à jour
@@ -84,9 +84,9 @@ export class CartComponent implements OnInit, OnDestroy {
     });
   }
 
-  removeItem(itemId: string): void {
+  removeItem(item: CartItem): void {
     this.loading = true;
-    this.cartService.removeFromCart(Number(itemId)).subscribe({
+    this.cartService.removeFromCart(item.productId).subscribe({
       next: () => {
         console.log('✅ Article supprimé avec succès');
         this.loadCart(); // Recharger le panier pour avoir les données à jour
