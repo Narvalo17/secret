@@ -50,7 +50,7 @@
           <h3>{{ product.name }}</h3>
           <p class="description">{{ product.description }}</p>
           <div class="category-info">
-            <span class="category-badge">{{ product.category?.name || getCategoryName(product.category?.id) }}</span>
+            <span class="category-badge">{{ getCategoryName(product.category) }}</span>
           </div>
           <div class="price-info">
             <p class="current-price">{{ formatPrice(product.price) }}</p>
@@ -67,9 +67,17 @@
             <input type="number" [(ngModel)]="product.selectedQuantity" min="1" [max]="product.quantity">
             <button (click)="incrementQuantity(product)" [disabled]="product.selectedQuantity >= product.quantity">+</button>
           </div>
-          <button class="add-to-cart" (click)="addToCart(product)" [disabled]="product.quantity === 0 || !product.active">
+          <button class="add-to-cart" 
+                  (click)="addToCart(product)" 
+                  [disabled]="product.quantity === 0 || !product.isActive"
+                  [title]="'Stock: ' + product.quantity + ', Actif: ' + product.isActive">
             <i class="fas fa-cart-plus"></i> Ajouter au panier
           </button>
+          <div class="debug-info" *ngIf="product.quantity === 0 || !product.isActive">
+            <small style="color: red;">
+              {{ product.quantity === 0 ? 'Produit en rupture de stock' : 'Produit non disponible' }}
+            </small>
+          </div>
         </div>
       </div>
     </div>

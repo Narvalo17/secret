@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Store } from '@core/models/store.model';
-import { Product } from '@core/models/product.model';
+import { Product, ProductCategory } from '@core/models/product.model';
 import { StoreService } from '@core/services/store.service';
 import { ProductService } from '@core/services/product.service';
 import { CategoryService } from '@core/services/category.service';
@@ -97,10 +97,11 @@ export class StoreDetailComponent implements OnInit {
         if (response && response.content) {
           this.products = response.content.map(product => ({
             ...product,
-            selectedQuantity: 1
+            selectedQuantity: 1,
+            isActive: product.isActive !== undefined ? product.isActive : true
           }));
           this.totalProducts = response.totalElements || 0;
-          console.log('Produits chargés:', this.products.length);
+          console.log('Produits chargés avec leurs états:', this.products);
         } else {
           console.error('Format de réponse des produits incorrect:', response);
           this.notificationService.error('Erreur de format dans la réponse des produits');
@@ -135,11 +136,6 @@ export class StoreDetailComponent implements OnInit {
       return;
     }
 
-    if (!this.store) {
-      this.notificationService.error('Erreur : informations du magasin manquantes');
-      return;
-    }
-
     // S'assurer que la quantité est un entier valide strictement supérieur à 0
     const quantity = Math.max(1, Math.round(Number(product.selectedQuantity)));
     
@@ -149,15 +145,6 @@ export class StoreDetailComponent implements OnInit {
       - selectedQuantity: ${typeof product.selectedQuantity} (${product.selectedQuantity})
       - après conversion: ${typeof quantity} (${quantity})
     `);
-    
-    // Collecter les données pour le débogage
-    const cartItem = {
-      productId: product.id,
-      quantity: quantity,
-      storeId: this.store.id
-    };
-
-    console.log('Ajout au panier:', cartItem);
 
     // Appeler le service avec les bons paramètres
     this.productService.addToCart(product.id, quantity).subscribe({
@@ -193,7 +180,22 @@ export class StoreDetailComponent implements OnInit {
     return this.productService.getProductImageUrl(product);
   }
 
-  getCategoryName(categoryId: number | null | undefined): string {
-    return this.categoryService.getCategoryName(categoryId);
+  getCategoryName(category: ProductCategory | undefined): string {
+    if (!category) return 'Non catégorisé';
+    
+    const categoryDisplayNames = {
+      [ProductCategory.PAIN]: 'Pain',
+      [ProductCategory.VIENNOISERIE]: 'Viennoiserie',
+      [ProductCategory.PATISSERIE]: 'Pâtisserie',
+      [ProductCategory.SANDWICH]: 'Sandwich',
+      [ProductCategory.PLAT]: 'Plat',
+      [ProductCategory.BOISSON]: 'Boisson',
+      [ProductCategory.FRUIT]: 'Fruit',
+      [ProductCategory.LEGUME]: 'Légume',
+      [ProductCategory.EPICERIE]: 'Épicerie',
+      [ProductCategory.AUTRE]: 'Autre'
+    };
+
+    return categoryDisplayNames[category] || 'Non catégorisé';
   }
 } 

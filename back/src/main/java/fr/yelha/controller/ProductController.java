@@ -1,6 +1,7 @@
 package fr.yelha.controller;
 
 import fr.yelha.dto.ProductDto;
+import fr.yelha.model.enums.ProductCategory;
 import fr.yelha.service.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +9,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
@@ -17,6 +21,9 @@ public class ProductController {
 
     @PostMapping
     public ResponseEntity<ProductDto> createProduct(@Valid @RequestBody ProductDto productDto) {
+        if (productDto.getCategory() == null) {
+            productDto.setCategory(ProductCategory.AUTRE);
+        }
         return ResponseEntity.ok(productService.createProduct(productDto));
     }
 
@@ -33,22 +40,24 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<ProductDto>> getAllProducts(Pageable pageable) {
+    public ResponseEntity<Page<ProductDto>> getAllProducts(
+            @RequestParam(required = false) ProductCategory category,
+            Pageable pageable) {
+        if (category != null) {
+            return ResponseEntity.ok(productService.getProductsByCategory(category, pageable));
+        }
         return ResponseEntity.ok(productService.getAllProducts(pageable));
     }
 
     @GetMapping("/store/{storeId}")
     public ResponseEntity<Page<ProductDto>> getProductsByStore(
             @PathVariable Long storeId,
+            @RequestParam(required = false) ProductCategory category,
             Pageable pageable) {
+        if (category != null) {
+            return ResponseEntity.ok(productService.getProductsByStoreAndCategory(storeId, category, pageable));
+        }
         return ResponseEntity.ok(productService.getProductsByStore(storeId, pageable));
-    }
-
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<Page<ProductDto>> getProductsByCategory(
-            @PathVariable Long categoryId,
-            Pageable pageable) {
-        return ResponseEntity.ok(productService.getProductsByCategory(categoryId, pageable));
     }
 
     @GetMapping("/search")
@@ -64,6 +73,11 @@ public class ProductController {
             @RequestParam String query,
             Pageable pageable) {
         return ResponseEntity.ok(productService.searchProductsByStore(storeId, query, pageable));
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<ProductCategory>> getAllCategories() {
+        return ResponseEntity.ok(Arrays.asList(ProductCategory.values()));
     }
 
     @DeleteMapping("/{id}")

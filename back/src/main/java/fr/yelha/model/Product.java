@@ -1,5 +1,6 @@
 package fr.yelha.model;
 
+import fr.yelha.model.enums.ProductCategory;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
@@ -31,9 +32,9 @@ public class Product {
     @Column(nullable = false)
     private boolean active = true;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private ProductCategory category = ProductCategory.AUTRE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)

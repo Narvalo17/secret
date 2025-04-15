@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Validated
 @Tag(name = "Paniers", description = "API de gestion des paniers d'achat")
+@CrossOrigin(origins = "*")
 public class CartController {
     private final ShoppingCartService shoppingCartService;
 
@@ -24,8 +25,7 @@ public class CartController {
     @Operation(summary = "Obtenir le panier d'un utilisateur", description = "Récupération du panier d'achat d'un utilisateur")
     @ApiResponse(responseCode = "200", description = "Panier trouvé")
     @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé")
-    public ResponseEntity<ShoppingCartDto> getCartByUser(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId) {
+    public ResponseEntity<ShoppingCartDto> getCart(@PathVariable Long userId) {
         return ResponseEntity.ok(shoppingCartService.getCartByUser(userId));
     }
 
@@ -34,10 +34,10 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Article ajouté avec succès")
     @ApiResponse(responseCode = "400", description = "Données invalides")
     @ApiResponse(responseCode = "404", description = "Utilisateur ou produit non trouvé")
-    public ResponseEntity<ShoppingCartDto> addItemToCart(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId,
-            @Parameter(description = "ID du produit") @RequestParam Long productId,
-            @Parameter(description = "Quantité à ajouter") @RequestParam @Min(1) Integer quantity) {
+    public ResponseEntity<ShoppingCartDto> addToCart(
+            @PathVariable Long userId,
+            @RequestParam Long productId,
+            @RequestParam(defaultValue = "1") Integer quantity) {
         return ResponseEntity.ok(shoppingCartService.addItemToCart(userId, productId, quantity));
     }
 
@@ -46,10 +46,10 @@ public class CartController {
     @ApiResponse(responseCode = "200", description = "Quantité mise à jour avec succès")
     @ApiResponse(responseCode = "400", description = "Données invalides")
     @ApiResponse(responseCode = "404", description = "Utilisateur ou produit non trouvé")
-    public ResponseEntity<ShoppingCartDto> updateCartItemQuantity(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId,
-            @Parameter(description = "ID du produit") @PathVariable Long productId,
-            @Parameter(description = "Nouvelle quantité") @RequestParam @Min(0) Integer quantity) {
+    public ResponseEntity<ShoppingCartDto> updateCartItem(
+            @PathVariable Long userId,
+            @PathVariable Long productId,
+            @RequestParam Integer quantity) {
         return ResponseEntity.ok(shoppingCartService.updateCartItemQuantity(userId, productId, quantity));
     }
 
@@ -57,9 +57,9 @@ public class CartController {
     @Operation(summary = "Supprimer un article du panier", description = "Suppression d'un produit du panier")
     @ApiResponse(responseCode = "200", description = "Article supprimé avec succès")
     @ApiResponse(responseCode = "404", description = "Utilisateur ou produit non trouvé")
-    public ResponseEntity<ShoppingCartDto> removeItemFromCart(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId,
-            @Parameter(description = "ID du produit") @PathVariable Long productId) {
+    public ResponseEntity<ShoppingCartDto> removeFromCart(
+            @PathVariable Long userId,
+            @PathVariable Long productId) {
         return ResponseEntity.ok(shoppingCartService.removeItemFromCart(userId, productId));
     }
 
@@ -67,9 +67,8 @@ public class CartController {
     @Operation(summary = "Vider le panier", description = "Suppression de tous les articles du panier")
     @ApiResponse(responseCode = "204", description = "Panier vidé avec succès")
     @ApiResponse(responseCode = "404", description = "Utilisateur non trouvé")
-    public ResponseEntity<Void> clearCart(
-            @Parameter(description = "ID de l'utilisateur") @PathVariable Long userId) {
+    public ResponseEntity<Void> clearCart(@PathVariable Long userId) {
         shoppingCartService.clearCart(userId);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 } 

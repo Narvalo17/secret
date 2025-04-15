@@ -1,7 +1,7 @@
 package fr.yelha.dto;
 
-import fr.yelha.model.Category;
 import fr.yelha.model.Store;
+import fr.yelha.model.enums.ProductCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -29,7 +29,8 @@ public class ProductDto {
 
     private boolean active = true;
 
-    private Category category;
+    @NotNull(message = "La catégorie est obligatoire")
+    private ProductCategory category = ProductCategory.AUTRE;
 
     @NotNull(message = "Le magasin est obligatoire")
     private Store store;

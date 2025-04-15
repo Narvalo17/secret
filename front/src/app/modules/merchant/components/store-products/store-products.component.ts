@@ -5,7 +5,7 @@ import { StoreService } from '@core/services/store.service';
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/notification.service';
 import { CategoryService, Category } from '@core/services/category.service';
-import { Product, CreateProductDto } from '@core/models/product.model';
+import { Product, CreateProductDto, ProductCategory } from '@core/models/product.model';
 import { Store, CreateStoreDto, StoreType } from '@core/models/store.model';
 import { forkJoin } from 'rxjs';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
@@ -41,7 +41,7 @@ export class StoreProductsComponent implements OnInit {
   selectedFile: File | null = null;
   
   // Catégories disponibles
-  categories: Category[] = [];
+  categories = Object.values(ProductCategory);
 
   constructor(
     private productService: ProductService,
@@ -56,20 +56,19 @@ export class StoreProductsComponent implements OnInit {
   }
 
   private initForms(): void {
-    // Initialisation du formulaire produit avec valeur "active" à true par défaut
     this.productForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
       price: ['', [Validators.required, Validators.min(0)]],
       quantity: ['', [Validators.required, Validators.min(0)]],
-      active: [true], // Par défaut, le produit est actif
-      categoryId: [null], // Ne pas définir de catégorie par défaut
+      active: [true],
+      category: [ProductCategory.AUTRE],
       imageUrl: ['']
     });
 
     this.searchForm = this.fb.group({
       searchTerm: [''],
-      categoryId: [null],
+      category: [null],
       minPrice: [''],
       maxPrice: ['']
     });
@@ -91,7 +90,6 @@ export class StoreProductsComponent implements OnInit {
     this.loading.categories = true;
     this.categoryService.getAllCategories().subscribe({
       next: (categories) => {
-        this.categories = categories;
         console.log('Catégories disponibles:', categories);
         this.loading.categories = false;
       },
@@ -178,9 +176,9 @@ export class StoreProductsComponent implements OnInit {
       );
     }
 
-    if (filters.categoryId) {
+    if (filters.category) {
       filtered = filtered.filter(product =>
-        product.category?.id === filters.categoryId
+        product.category === filters.category
       );
     }
 
@@ -202,39 +200,25 @@ export class StoreProductsComponent implements OnInit {
   onSubmit(): void {
     if (this.productForm.valid && this.store) {
       this.loading.submit = true;
+      const formData = this.productForm.value;
       
-      // Récupérer les valeurs du formulaire
-      const formValues = this.productForm.value;
-      
-      // Format minimal qui fonctionne selon Postman
-      const productData: any = {
-        name: formValues.name,
-        description: formValues.description || '',
-        price: formValues.price,
-        quantity: formValues.quantity,
-        active: true,
-        store: {
-          id: this.store.id
-        }
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        quantity: formData.quantity,
+        active: formData.active,
+        category: formData.category, // Envoyer directement la valeur de l'enum
+        store: { id: this.store.id }
       };
 
-      // Ajouter la catégorie uniquement si elle est spécifiée ET non nulle
-      // ET si elle existe dans la liste des catégories disponibles
-      if (formValues.categoryId && this.categories.some(c => c.id === formValues.categoryId)) {
-        productData.category = {
-          id: formValues.categoryId
-        };
-      }
-
-      console.log('Données produit à envoyer:', productData);
-
-      if (this.editingProduct && this.editingProduct.id) {
+      if (this.editingProduct) {
         this.updateProduct(this.editingProduct.id, productData);
       } else {
         this.createProduct(productData);
       }
     } else {
-      this.notificationService.error('Veuillez remplir tous les champs requis');
+      this.notificationService.error('Veuillez remplir tous les champs obligatoires');
     }
   }
 
@@ -330,9 +314,8 @@ export class StoreProductsComponent implements OnInit {
   private sendCreateProductRequest(productData: any): void {
     console.log('Envoi des données pour création de produit:', JSON.stringify(productData));
     
-    // Vérifier si store.id et category.id sont valides
+    // Vérifier si store.id est valide
     const storeId = productData.store?.id;
-    const categoryId = productData.category?.id;
     
     if (!storeId) {
       this.notificationService.error('ID du magasin manquant ou invalide');
@@ -340,9 +323,9 @@ export class StoreProductsComponent implements OnInit {
       return;
     }
     
-    // Si une catégorie est spécifiée, vérifier qu'elle existe bien
-    if (categoryId && !this.categories.some(c => c.id === categoryId)) {
-      this.notificationService.error(`La catégorie avec l'ID ${categoryId} n'existe pas`);
+    // Vérifier si la catégorie est valide
+    if (productData.category && !Object.values(ProductCategory).includes(productData.category)) {
+      this.notificationService.error(`La catégorie ${productData.category} n'existe pas`);
       this.loading.submit = false;
       return;
     }
@@ -406,8 +389,8 @@ export class StoreProductsComponent implements OnInit {
       description: product.description,
       price: product.price,
       quantity: product.quantity,
-      active: product.active,
-      categoryId: product.category?.id,
+      active: product.isActive,
+      category: product.category,
       imageUrl: product.imageUrl
     });
     this.showForm = true;
@@ -435,19 +418,19 @@ export class StoreProductsComponent implements OnInit {
     
     const updatedProduct = { 
       ...product, 
-      active: !product.active 
+      isActive: !product.isActive 
     };
     
     this.productService.updateProduct(product.id, updatedProduct).subscribe({
       next: () => {
-        this.notificationService.success(`Produit ${updatedProduct.active ? 'activé' : 'désactivé'} avec succès`);
-        product.active = updatedProduct.active;
+        this.notificationService.success(`Produit ${updatedProduct.isActive ? 'activé' : 'désactivé'} avec succès`);
+        product.isActive = updatedProduct.isActive;
       },
       error: (error) => {
         this.notificationService.error('Erreur lors de la mise à jour du statut');
         console.error('Error updating product status:', error);
         // Revenir à l'état précédent
-        product.active = !updatedProduct.active;
+        product.isActive = !updatedProduct.isActive;
       }
     });
   }
@@ -509,7 +492,7 @@ export class StoreProductsComponent implements OnInit {
   resetForm(): void {
     this.productForm.reset({
       active: true,
-      categoryId: null
+      category: ProductCategory.AUTRE
     });
     this.editingProduct = null;
     this.showForm = false;
@@ -558,12 +541,23 @@ export class StoreProductsComponent implements OnInit {
     return `https://placehold.co/400/EEE/31343C?text=${productName.substring(0, 10)}`;
   }
 
-  getCategoryName(categoryId: number | undefined): string {
-    if (!categoryId) return 'Sans catégorie';
+  getCategoryName(category: ProductCategory | undefined): string {
+    if (!category) return 'Non catégorisé';
     
-    // Utiliser les catégories chargées depuis l'API
-    const category = this.categories.find(c => c.id === categoryId);
-    return category ? category.name : 'Catégorie inconnue';
+    const categoryDisplayNames = {
+      [ProductCategory.PAIN]: 'Pain',
+      [ProductCategory.VIENNOISERIE]: 'Viennoiserie',
+      [ProductCategory.PATISSERIE]: 'Pâtisserie',
+      [ProductCategory.SANDWICH]: 'Sandwich',
+      [ProductCategory.PLAT]: 'Plat',
+      [ProductCategory.BOISSON]: 'Boisson',
+      [ProductCategory.FRUIT]: 'Fruit',
+      [ProductCategory.LEGUME]: 'Légume',
+      [ProductCategory.EPICERIE]: 'Épicerie',
+      [ProductCategory.AUTRE]: 'Autre'
+    };
+
+    return categoryDisplayNames[category] || 'Non catégorisé';
   }
 
   createDefaultStore(): void {

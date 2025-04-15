@@ -1,12 +1,13 @@
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable, throwError, of, from } from 'rxjs';
 import { Product, ProductResponse, ProductFilter } from '../models/product.model';
 import { environment } from '../../../environments/environment';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, switchMap, tap } from 'rxjs/operators';
 import { AuthService } from './auth.service';
 import { NotificationService } from './notification.service';
-import { ShoppingCartService } from './shopping-cart.service';
+import { CartService } from './cart.service';
+import { StoreService } from './store.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,11 +19,48 @@ export class ProductService {
     private http: HttpClient,
     private authService: AuthService,
     private notificationService: NotificationService,
-    private injector: Injector
+    private cartService: CartService,
+    private storeService: StoreService
   ) {}
 
   getAllProducts(page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
-    return this.http.get<any>(`${this.apiUrl}?page=${page}&size=${size}`);
+    console.log(`Appel API pour récupérer tous les produits, page ${page}, taille ${size}`);
+    return this.http.get<any>(`${this.apiUrl}?page=${page}&size=${size}`)
+      .pipe(
+        map(response => {
+          console.log('Réponse brute de l\'API getAllProducts:', response);
+          
+          // Vérifier si la réponse est au format attendu
+          if (!response || typeof response !== 'object') {
+            console.error('Format de réponse invalide:', response);
+            return { content: [], totalElements: 0 };
+          }
+          
+          // Normaliser la réponse
+          const content = Array.isArray(response.content) ? response.content : 
+                         (Array.isArray(response) ? response : []);
+          const totalElements = response.totalElements || content.length || 0;
+          
+          // Vérifier et logger chaque produit
+          content.forEach((product: any) => {
+            console.log('Produit reçu:', {
+              id: product?.id,
+              name: product?.name,
+              storeId: product?.storeId,
+              price: product?.price
+            });
+          });
+          
+          return { 
+            content: content as Product[], 
+            totalElements 
+          };
+        }),
+        catchError(error => {
+          console.error('Erreur lors de la récupération des produits:', error);
+          return of({ content: [], totalElements: 0 });
+        })
+      );
   }
 
   getProductsByStore(storeId: number, page: number = 0, size: number = 10): Observable<{ content: Product[], totalElements: number }> {
@@ -94,24 +132,36 @@ export class ProductService {
   }
 
   // Méthode pour ajouter un produit au panier
-  addToCart(productId: number, quantity: number = 1): Observable<any> {
-    // Vérifier si l'utilisateur est connecté
+  addToCart(productId: number, quantity: number = 1): Observable<void> {
     const currentUser = this.authService.getCurrentUser();
     
-    if (!currentUser || !currentUser.id) {
-      this.notificationService.warning('Veuillez vous connecter pour ajouter des produits au panier');
-      return throwError(() => new Error('Utilisateur non connecté'));
+    if (!currentUser || typeof currentUser !== 'object' || !('id' in currentUser)) {
+      console.error('User not authenticated');
+      return throwError(() => new Error('Please log in to add items to cart'));
     }
-    
-    const userId = currentUser.id;
-    
-    console.log(`🛒 Ajout au panier via ProductService: 👤 userId=${userId}, 📦 productId=${productId}, 🔢 quantity=${quantity}`);
-    
-    // On utilise le service ShoppingCartService pour garder la cohérence
-    // Importer le service avec l'injecteur pour éviter les dépendances circulaires
-    const shoppingCartService = this.injector.get(ShoppingCartService);
-    
-    // Ajouter l'article et s'assurer que le sujet qui diffuse les mises à jour du panier est notifié
-    return shoppingCartService.addToCart(productId, quantity);
+
+    return this.getProductById(productId).pipe(
+      switchMap(product => {
+        if (!product) {
+          console.error('Product not found');
+          return throwError(() => new Error('Product not found'));
+        }
+
+        if (product.quantity < quantity) {
+          console.error('Insufficient quantity available');
+          return throwError(() => new Error('Insufficient quantity available'));
+        }
+
+        console.log('Adding to cart:', { productId, quantity });
+        return this.cartService.addToCart({ productId, quantity }).pipe(
+          map(() => void 0),
+          tap(() => console.log('Successfully added to cart'))
+        );
+      }),
+      catchError(error => {
+        console.error('Error adding to cart:', error);
+        return throwError(() => error);
+      })
+    );
   }
 } 

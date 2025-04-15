@@ -2,11 +2,10 @@ package fr.yelha.service;
 
 import fr.yelha.dto.ShoppingCartDto;
 import fr.yelha.dto.ShoppingCartDetailDto;
-import fr.yelha.model.ShoppingCart;
 import fr.yelha.model.ShoppingCartDetail;
 import fr.yelha.model.User;
 import fr.yelha.model.Product;
-import fr.yelha.repository.ShoppingCartRepository;
+import fr.yelha.repository.ShoppingCartDetailRepository;
 import fr.yelha.repository.UserRepository;
 import fr.yelha.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Transactional
 public class ShoppingCartService {
-    private final ShoppingCartRepository shoppingCartRepository;
+    private final ShoppingCartDetailRepository cartDetailRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
 
@@ -28,14 +27,8 @@ public class ShoppingCartService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + userId));
         
-        ShoppingCart cart = shoppingCartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    ShoppingCart newCart = new ShoppingCart();
-                    newCart.setUser(user);
-                    return shoppingCartRepository.save(newCart);
-                });
-        
-        return convertToDto(cart);
+        List<ShoppingCartDetail> cartItems = cartDetailRepository.findByUserId(userId);
+        return convertToDto(user, cartItems);
     }
 
     public ShoppingCartDto addItemToCart(Long userId, Long productId, Integer quantity) {
@@ -49,100 +42,80 @@ public class ShoppingCartService {
             throw new RuntimeException("Le produit n'est pas disponible");
         }
         
-        ShoppingCart cart = shoppingCartRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    ShoppingCart newCart = new ShoppingCart();
-                    newCart.setUser(user);
-                    return shoppingCartRepository.save(newCart);
-                });
-        
         // Vérifier si le produit existe déjà dans le panier
-        boolean productExistsInCart = false;
-        ShoppingCartDetail cartItem = null;
-        
-        for (ShoppingCartDetail item : cart.getItems()) {
-            if (item.getProduct().getId().equals(productId)) {
-                cartItem = item;
-                productExistsInCart = true;
-                break;
-            }
-        }
-        
-        // Si le produit n'existe pas déjà dans le panier, créer un nouvel élément
-        if (!productExistsInCart) {
-            cartItem = new ShoppingCartDetail();
-            cartItem.setShoppingCart(cart);
-            cartItem.setProduct(product);
-            // Initialiser directement avec la quantité fournie au lieu de 0
-            cartItem.setQuantity(quantity);
-            cart.addItem(cartItem);
-        } else {
+        ShoppingCartDetail cartItem = cartDetailRepository.findByUserIdAndProductId(userId, productId)
+                .orElseGet(() -> {
+                    ShoppingCartDetail newItem = new ShoppingCartDetail();
+                    newItem.setUser(user);
+                    newItem.setProduct(product);
+                    newItem.setQuantity(quantity);
+                    return newItem;
+                });
+
+        if (cartItem.getId() != null) {
             // Si le produit existe déjà, mettre à jour la quantité
-            int newQuantity = cartItem.getQuantity() + quantity;
-            cartItem.setQuantity(newQuantity);
+            cartItem.setQuantity(cartItem.getQuantity() + quantity);
         }
         
-        return convertToDto(shoppingCartRepository.save(cart));
+        cartDetailRepository.save(cartItem);
+        List<ShoppingCartDetail> cartItems = cartDetailRepository.findByUserId(userId);
+        return convertToDto(user, cartItems);
     }
 
     public ShoppingCartDto updateCartItemQuantity(Long userId, Long productId, Integer quantity) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + userId));
         
-        ShoppingCart cart = shoppingCartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Panier non trouvé pour l'utilisateur"));
-        
-        ShoppingCartDetail cartItem = cart.getItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst()
+        ShoppingCartDetail cartItem = cartDetailRepository.findByUserIdAndProductId(userId, productId)
                 .orElseThrow(() -> new RuntimeException("Produit non trouvé dans le panier"));
         
-        cartItem.setQuantity(quantity);
-        
         if (quantity <= 0) {
-            cart.removeItem(cartItem);
+            cartDetailRepository.delete(cartItem);
+        } else {
+            cartItem.setQuantity(quantity);
+            cartDetailRepository.save(cartItem);
         }
         
-        return convertToDto(shoppingCartRepository.save(cart));
+        List<ShoppingCartDetail> cartItems = cartDetailRepository.findByUserId(userId);
+        return convertToDto(user, cartItems);
     }
 
     public ShoppingCartDto removeItemFromCart(Long userId, Long productId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + userId));
         
-        ShoppingCart cart = shoppingCartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Panier non trouvé pour l'utilisateur"));
+        cartDetailRepository.deleteByUserIdAndProductId(userId, productId);
         
-        cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
-        
-        return convertToDto(shoppingCartRepository.save(cart));
+        List<ShoppingCartDetail> cartItems = cartDetailRepository.findByUserId(userId);
+        return convertToDto(user, cartItems);
     }
 
     public void clearCart(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé avec l'ID : " + userId));
         
-        ShoppingCart cart = shoppingCartRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("Panier non trouvé pour l'utilisateur"));
-        
-        cart.clear();
-        shoppingCartRepository.save(cart);
+        cartDetailRepository.deleteByUserId(userId);
     }
 
-    private ShoppingCartDto convertToDto(ShoppingCart cart) {
+    private ShoppingCartDto convertToDto(User user, List<ShoppingCartDetail> items) {
         ShoppingCartDto dto = new ShoppingCartDto();
-        dto.setId(cart.getId());
-        dto.setUserId(cart.getUser().getId());
+        dto.setUserId(user.getId());
         
-        List<ShoppingCartDetailDto> items = cart.getItems().stream()
+        List<ShoppingCartDetailDto> itemDtos = items.stream()
                 .map(this::convertCartItemToDto)
                 .collect(Collectors.toList());
-        dto.setItems(items);
+        dto.setItems(itemDtos);
         
-        dto.setTotalAmount(cart.getTotalAmount());
-        dto.setTotalItems(cart.getTotalItems());
-        dto.setCreatedAt(cart.getCreatedAt());
-        dto.setUpdatedAt(cart.getUpdatedAt());
+        // Calculer les totaux
+        double totalAmount = items.stream()
+                .mapToDouble(item -> item.getQuantity() * item.getProduct().getPrice().doubleValue())
+                .sum();
+        int totalItems = items.stream()
+                .mapToInt(ShoppingCartDetail::getQuantity)
+                .sum();
+        
+        dto.setTotalAmount(totalAmount);
+        dto.setTotalItems(totalItems);
         
         return dto;
     }
@@ -150,7 +123,7 @@ public class ShoppingCartService {
     private ShoppingCartDetailDto convertCartItemToDto(ShoppingCartDetail item) {
         ShoppingCartDetailDto dto = new ShoppingCartDetailDto();
         dto.setId(item.getId());
-        dto.setCartId(item.getShoppingCart().getId());
+        dto.setUserId(item.getUser().getId());
         dto.setProductId(item.getProduct().getId());
         dto.setProductName(item.getProduct().getName());
         dto.setProductImage(item.getProduct().getImageUrl());

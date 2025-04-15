@@ -1,0 +1,63 @@
+<div class="product-detail-container">
+  <!-- Loading state -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Chargement du produit...</p>
+  </div>
+
+  <!-- Error state -->
+  <div class="error-container" *ngIf="error && !loading">
+    <p>Une erreur est survenue lors du chargement du produit</p>
+    <button class="btn-primary" routerLink="/products">
+      Retour aux produits
+    </button>
+  </div>
+
+  <!-- Product details -->
+  <div class="product-content" *ngIf="product && !loading && !error">
+    <div class="product-image">
+      <img [src]="getProductImageUrl(product)" [alt]="product.name">
+    </div>
+
+    <div class="product-info">
+      <h1>{{ product.name }}</h1>
+      
+      <p class="description">{{ product.description }}</p>
+      
+      <div class="price-section">
+        <span class="price">{{ formatPrice(product.price) }}</span>
+      </div>
+
+      <div class="stock-info" [class.low-stock]="product.quantity < 5">
+        <span *ngIf="product.quantity > 0">
+          En stock: {{ product.quantity }} unité(s)
+        </span>
+        <span *ngIf="product.quantity === 0" class="out-of-stock">
+          Rupture de stock
+        </span>
+      </div>
+
+      <div class="actions">
+        <div class="quantity-selector">
+          <button class="quantity-btn" (click)="decrementQuantity()" [disabled]="selectedQuantity <= 1">
+            <i class="fas fa-minus"></i>
+          </button>
+          <span class="quantity">{{ selectedQuantity }}</span>
+          <button class="quantity-btn" (click)="incrementQuantity()" [disabled]="selectedQuantity >= (product?.quantity || 0)">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+
+        <button mat-raised-button color="primary" (click)="addToCart()" [disabled]="!product.isActive || product.quantity === 0">
+          <mat-icon>add_shopping_cart</mat-icon>
+          Ajouter au panier
+        </button>
+
+        <!-- Debug info -->
+        <div class="debug-info" style="margin-top: 1rem; font-size: 0.8rem; color: #666;">
+          ID: {{ product.id }}, Quantité: {{ selectedQuantity }}, Actif: {{ product.isActive }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

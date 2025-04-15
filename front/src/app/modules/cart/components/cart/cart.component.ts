@@ -4,10 +4,9 @@ import { Cart, CartItem } from '@core/models/cart.model';
 import { NotificationService } from '@core/services/notification.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
-import { ShoppingCartService } from '@core/services/shopping-cart.service';
-import { ShoppingCart, ShoppingCartItem } from '@core/models/shopping-cart.ts';
-import { Subscription } from 'rxjs';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subscription } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-cart',
@@ -16,7 +15,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 })
 export class CartComponent implements OnInit, OnDestroy {
   cart: Cart | null = null;
-  shoppingCart: ShoppingCart = { items: [] };
   loading = false;
   showPaymentForm = false;
   paymentForm: FormGroup;
@@ -24,7 +22,6 @@ export class CartComponent implements OnInit, OnDestroy {
 
   constructor(
     private cartService: CartService,
-    private shoppingCartService: ShoppingCartService,
     private notificationService: NotificationService,
     private router: Router,
     private authService: AuthService,
@@ -39,13 +36,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Charger les deux carts pour rétrocompatibilité
-    this.cartService.getCart().subscribe(cart => {
-      this.cart = cart;
-    });
-    
-    // Charge le shopping cart depuis le backend/cache local
-    this.loadShoppingCart();
+    this.loadCart();
   }
   
   ngOnDestroy(): void {
@@ -54,36 +45,13 @@ export class CartComponent implements OnInit, OnDestroy {
     }
   }
   
-  loadShoppingCart(): void {
+  loadCart(): void {
     console.log('🚀 Initialisation du composant de panier');
     this.loading = true;
-    this.cartSubscription = this.shoppingCartService.getShoppingCart().subscribe({
+    this.cartSubscription = this.cartService.getCart().subscribe({
       next: (cart) => {
         console.log('✅ Panier récupéré dans CartComponent:', cart);
-        this.shoppingCart = cart;
-        
-        // Si le nouveau panier a des articles, adapter le format pour l'affichage
-        if (cart.items && cart.items.length > 0) {
-          // Créer un panier au format Cart pour la rétrocompatibilité avec le template
-          const adaptedCart: Cart = {
-            items: cart.items.map(item => this.adaptShoppingCartItem(item)),
-            total: cart.totalAmount || 0
-          };
-          
-          // Calculer le total correct si nécessaire
-          if (!adaptedCart.total) {
-            adaptedCart.total = adaptedCart.items.reduce((sum, item) => 
-              sum + (item.price * item.quantity), 0);
-          }
-          
-          // Remplacer le panier local par le panier backend
-          this.cart = adaptedCart;
-          console.log('👉 Panier adapté pour l\'affichage:', this.cart);
-        } else {
-          // Si le panier est vide, s'assurer que cart est également vide
-          this.cart = { items: [], total: 0 };
-        }
-        
+        this.cart = cart;
         this.loading = false;
       },
       error: (error) => {
@@ -93,22 +61,6 @@ export class CartComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
-  // Adapter les items du ShoppingCart pour le format CartItem
-  private adaptShoppingCartItem(item: ShoppingCartItem): CartItem {
-    return {
-      id: String(item.productId), // L'ancienne interface utilise des id en string
-      name: item.productName || `Produit #${item.productId}`,
-      description: '',
-      price: item.productPrice || 0,
-      originalPrice: item.productPrice || 0,
-      discountPercentage: 0,
-      quantity: item.quantity,
-      imageUrl: item.productImage || '',
-      storeId: '', // Non disponible dans ShoppingCartItem
-      storeName: '' // Non disponible dans ShoppingCartItem
-    };
-  }
 
   updateItemQuantity(itemId: string, newQuantity: number): void {
     if (newQuantity < 1) {
@@ -116,18 +68,15 @@ export class CartComponent implements OnInit, OnDestroy {
       return;
     }
     
-    // Convertir itemId en nombre pour ShoppingCartService
-    const productId = Number(itemId);
-    
     this.loading = true;
-    this.shoppingCartService.updateQuantity(productId, newQuantity).subscribe({
-      next: (cart) => {
+    this.cartService.updateCartItem(Number(itemId), newQuantity).subscribe({
+      next: () => {
         console.log('✅ Quantité mise à jour avec succès');
-        this.loadShoppingCart(); // Recharger le panier pour avoir les données à jour
+        this.loadCart(); // Recharger le panier pour avoir les données à jour
         this.notificationService.success('Quantité mise à jour');
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('❌ Erreur lors de la mise à jour de la quantité:', error);
         this.notificationService.error('Erreur lors de la mise à jour de la quantité');
         this.loading = false;
@@ -136,18 +85,15 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   removeItem(itemId: string): void {
-    // Convertir itemId en nombre pour ShoppingCartService
-    const productId = Number(itemId);
-    
     this.loading = true;
-    this.shoppingCartService.removeFromCart(productId).subscribe({
-      next: (cart) => {
+    this.cartService.removeFromCart(Number(itemId)).subscribe({
+      next: () => {
         console.log('✅ Article supprimé avec succès');
-        this.loadShoppingCart(); // Recharger le panier pour avoir les données à jour
+        this.loadCart(); // Recharger le panier pour avoir les données à jour
         this.notificationService.info('Article retiré du panier');
         this.loading = false;
       },
-      error: (error) => {
+      error: (error: HttpErrorResponse) => {
         console.error('❌ Erreur lors de la suppression de l\'article:', error);
         this.notificationService.error('Erreur lors de la suppression de l\'article');
         this.loading = false;
@@ -156,7 +102,7 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   checkout(): void {
-    if ((!this.cart || this.cart.items.length === 0) && (!this.shoppingCart || this.shoppingCart.items.length === 0)) {
+    if (!this.cart || this.cart.items.length === 0) {
       this.notificationService.warning('Votre panier est vide');
       return;
     }
@@ -205,18 +151,17 @@ export class CartComponent implements OnInit, OnDestroy {
     
     if (proceed) {
       this.loading = true;
-      this.shoppingCartService.clearCart().subscribe({
-        next: (emptyCart) => {
+      this.cartService.clearCart().subscribe({
+        next: () => {
           console.log('✅ Panier vidé avec succès');
           // Mise à jour de l'interface
           this.cart = { items: [], total: 0 };
-          this.shoppingCart = emptyCart;
           if (showConfirmation) {
             this.notificationService.success('Votre panier a été vidé');
           }
           this.loading = false;
         },
-        error: (error) => {
+        error: (error: HttpErrorResponse) => {
           console.error('❌ Erreur lors du vidage du panier:', error);
           this.notificationService.error('Erreur lors du vidage du panier');
           this.loading = false;

@@ -85,13 +85,15 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="categoryId">Catégorie du produit</label>
-          <select id="categoryId" formControlName="categoryId" class="form-control">
-            <option [ngValue]="null">-- Aucune catégorie --</option>
-            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
-          </select>
-          <div class="form-hint">Choisissez une catégorie pour votre produit (facultatif)</div>
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Catégorie du produit</mat-label>
+            <mat-select formControlName="category">
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ getCategoryName(category) }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
 
         <div class="form-actions">
@@ -117,15 +119,11 @@
 
           <mat-form-field appearance="outline">
             <mat-label>Catégorie</mat-label>
-            <mat-select formControlName="categoryId">
+            <mat-select formControlName="category">
               <mat-option [value]="null">Toutes les catégories</mat-option>
-              <mat-option [value]="1">Vêtements</mat-option>
-              <mat-option [value]="2">Électronique</mat-option>
-              <mat-option [value]="3">Alimentation</mat-option>
-              <mat-option [value]="4">Maison</mat-option>
-              <mat-option [value]="5">Beauté & Santé</mat-option>
-              <mat-option [value]="6">Sport & Loisirs</mat-option>
-              <mat-option [value]="7">Autres</mat-option>
+              <mat-option *ngFor="let category of categories" [value]="category">
+                {{ getCategoryName(category) }}
+              </mat-option>
             </mat-select>
           </mat-form-field>
 
@@ -192,7 +190,7 @@
         <ng-container matColumnDef="category">
           <th mat-header-cell *matHeaderCellDef>Catégorie</th>
           <td mat-cell *matCellDef="let product">
-            <span class="category-badge">{{ product.category?.name || getCategoryName(product.category?.id) }}</span>
+            <span class="category-badge">{{ getCategoryName(product.category) }}</span>
           </td>
         </ng-container>
 

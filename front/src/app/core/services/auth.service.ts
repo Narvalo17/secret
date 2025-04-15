@@ -245,8 +245,21 @@ export class AuthService {
     return role === 'STORE_OWNER';
   }
 
-  getCurrentUser(): User | null {
-    return this.currentUserSubject.value;
+  getCurrentUser(): any {
+    console.log('🔐 [AuthService] Vérification de l\'utilisateur courant');
+    const userStr = localStorage.getItem('currentUser');
+    if (!userStr) {
+      console.warn('⚠️ [AuthService] Aucun utilisateur trouvé dans le localStorage');
+      return null;
+    }
+    try {
+      const user = JSON.parse(userStr);
+      console.log('✅ [AuthService] Utilisateur trouvé:', user);
+      return user;
+    } catch (error) {
+      console.error('❌ [AuthService] Erreur lors de la récupération de l\'utilisateur:', error);
+      return null;
+    }
   }
 
   getUserRole(): string | null {

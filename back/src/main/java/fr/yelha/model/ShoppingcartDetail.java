@@ -19,8 +19,8 @@ public class ShoppingCartDetail {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "shopping_cart_id", nullable = false)
-    private ShoppingCart shoppingCart;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)

@@ -3,10 +3,9 @@ package fr.yelha.service;
 import fr.yelha.dto.ProductDto;
 import fr.yelha.model.Product;
 import fr.yelha.model.Store;
-import fr.yelha.model.Category;
+import fr.yelha.model.enums.ProductCategory;
 import fr.yelha.repository.ProductRepository;
 import fr.yelha.repository.StoreRepository;
-import fr.yelha.repository.CategoryRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,7 +20,6 @@ import java.math.BigDecimal;
 public class ProductService {
     private final ProductRepository productRepository;
     private final StoreRepository storeRepository;
-    private final CategoryRepository categoryRepository;
 
     public ProductDto createProduct(ProductDto productDto) {
         Product product = new Product();
@@ -49,8 +47,18 @@ public class ProductService {
         return productRepository.findByStoreId(storeId, pageable).map(this::convertToDto);
     }
 
-    public Page<ProductDto> getProductsByCategory(Long categoryId, Pageable pageable) {
-        return productRepository.findByCategoryId(categoryId, pageable).map(this::convertToDto);
+    public Page<ProductDto> getProductsByCategory(ProductCategory category, Pageable pageable) {
+        if (category == null) {
+            return getAllProducts(pageable);
+        }
+        return productRepository.findByCategory(category, pageable).map(this::convertToDto);
+    }
+
+    public Page<ProductDto> getProductsByStoreAndCategory(Long storeId, ProductCategory category, Pageable pageable) {
+        if (category == null) {
+            return getProductsByStore(storeId, pageable);
+        }
+        return productRepository.findByStoreIdAndCategory(storeId, category, pageable).map(this::convertToDto);
     }
 
     public Page<ProductDto> searchProducts(String query, Pageable pageable) {
@@ -87,9 +95,19 @@ public class ProductService {
         product.setPrice(dto.getPrice());
         product.setQuantity(dto.getQuantity());
         product.setActive(dto.isActive());
-        product.setCategory(dto.getCategory());
         product.setStore(dto.getStore());
         product.setImageUrl(dto.getImageUrl());
+        
+        // Gestion de la catégorie avec validation
+        ProductCategory category = dto.getCategory();
+        if (category == null) {
+            category = ProductCategory.AUTRE;
+        }
+        try {
+            product.setCategory(category);
+        } catch (IllegalArgumentException e) {
+            product.setCategory(ProductCategory.AUTRE);
+        }
     }
 
     private ProductDto convertToDto(Product product) {
@@ -100,11 +118,11 @@ public class ProductService {
         dto.setPrice(product.getPrice());
         dto.setQuantity(product.getQuantity());
         dto.setActive(product.isActive());
-        dto.setCategory(product.getCategory());
         dto.setStore(product.getStore());
         dto.setImageUrl(product.getImageUrl());
         dto.setCreatedAt(product.getCreatedAt());
         dto.setUpdatedAt(product.getUpdatedAt());
+        dto.setCategory(product.getCategory());
         return dto;
     }
 } 

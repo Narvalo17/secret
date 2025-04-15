@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 @Data
 public class ShoppingCartDetailDto {
     private Long id;
-    private Long cartId;
+    private Long userId;
     
     @NotNull(message = "L'ID du produit est requis")
     private Long productId;

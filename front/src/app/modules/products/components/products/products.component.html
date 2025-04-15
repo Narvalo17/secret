@@ -15,14 +15,15 @@
 
   <!-- Catégories -->
   <div class="categories-container">
-    <button 
-      *ngFor="let category of categories"
-      class="category-btn"
-      [class.active]="selectedCategory === category.id"
-      (click)="selectCategory(category.id)">
-      <i class="fas" [ngClass]="category.icon"></i>
-      <span>{{ category.name }}</span>
-    </button>
+    <div class="categories-scroll">
+      <button *ngFor="let category of categories"
+              [class.active]="selectedCategoryId === category.id"
+              (click)="selectCategory(category.id)"
+              class="category-button">
+        <i class="fas" [class]="category.icon"></i>
+        <span>{{ category.name }}</span>
+      </button>
+    </div>
   </div>
 
   <!-- Message d'erreur -->
@@ -39,47 +40,20 @@
 
   <!-- Grille de produits -->
   <div *ngIf="!loading && !error" class="products-grid">
-    <div *ngFor="let product of filteredProducts" class="product-card" [class.low-stock]="product.quantity < 5">
-      <div class="product-image">
+    <div class="product-card" *ngFor="let product of filteredProducts" [class.low-stock]="product.quantity < 5">
+      <div class="product-image" [routerLink]="['/products', product.id]" style="cursor: pointer;">
         <img [src]="getProductImageUrl(product)" [alt]="product.name">
-        <div class="product-overlay">
-          <div class="quantity-selector">
-            <button 
-              class="quantity-btn"
-              (click)="updateQuantity(product.id!, -1)"
-              [disabled]="!product.id || (selectedQuantities[product.id] || 1) <= 1">
-              <i class="fas fa-minus"></i>
-            </button>
-            <span class="quantity-value">{{ product.id ? (selectedQuantities[product.id] || 1) : 1 }}</span>
-            <button 
-              class="quantity-btn"
-              (click)="updateQuantity(product.id!, 1)"
-              [disabled]="!product.id || (selectedQuantities[product.id] || 1) >= product.quantity">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-          <button (click)="addToCart(product)" class="add-to-cart-btn" [disabled]="!product.active || product.quantity <= 0">
-            <i class="fas fa-cart-plus"></i>
-            Ajouter au panier
-          </button>
-        </div>
         <div class="product-badge" *ngIf="product.quantity < 5">
           Plus que {{ product.quantity }} en stock !
         </div>
       </div>
-      <div class="product-info">
+      <div class="product-info" [routerLink]="['/products', product.id]" style="cursor: pointer;">
         <h3>{{ product.name }}</h3>
         <p class="description">{{ product.description }}</p>
-        <div class="category-info">
-          <span class="category-badge">{{ product.category?.name || getCategoryName(product.category?.id) }}</span>
-        </div>
         <div class="product-footer">
-          <div class="price-info">
-            <span class="current-price">{{ formatPrice(product.price) }}</span>
-          </div>
-          <span class="quantity">
-            <i class="fas fa-box"></i>
-            {{ product.quantity }} disponible(s)
+          <span class="price">{{ formatPrice(product.price) }}</span>
+          <span class="quantity" [class.low-stock]="product.quantity < 5">
+            <i class="fas fa-box"></i> {{ product.quantity }} en stock
           </span>
         </div>
       </div>
@@ -110,4 +84,112 @@
     <i class="fas fa-box-open"></i>
     <p>Aucun produit ne correspond à votre recherche</p>
   </div>
-</div> 
+</div>
+
+<style>
+.categories-container {
+  width: 100%;
+  overflow: hidden;
+  margin: 1rem 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.categories-scroll {
+  display: flex;
+  overflow-x: auto;
+  padding: 1rem;
+  gap: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: #4CAF50 #f0f0f0;
+}
+
+.categories-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.categories-scroll::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+.categories-scroll::-webkit-scrollbar-thumb {
+  background-color: #4CAF50;
+  border-radius: 3px;
+}
+
+.category-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 20px;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.category-button i {
+  font-size: 1rem;
+}
+
+.category-button:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.category-button.active {
+  background: #4CAF50;
+  color: white;
+  box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.products-header {
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+
+.products-header h1 {
+  color: #2c3e50;
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.search-bar {
+  position: relative;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.search-bar i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.8rem 1rem 0.8rem 2.5rem;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+</style> 

@@ -1,21 +1,33 @@
-export interface Product {
-  id?: number;
+export enum ProductCategory {
+    PAIN = 'PAIN',
+    VIENNOISERIE = 'VIENNOISERIE',
+    PATISSERIE = 'PATISSERIE',
+    SANDWICH = 'SANDWICH',
+    PLAT = 'PLAT',
+    BOISSON = 'BOISSON',
+    FRUIT = 'FRUIT',
+    LEGUME = 'LEGUME',
+    EPICERIE = 'EPICERIE',
+    AUTRE = 'AUTRE'
+}
+
+export interface Category {
+  id: number;
   name: string;
-  description?: string;
+}
+
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
   price: number;
-  quantity: number;
-  active: boolean;
-  category?: {
-    id: number;
-    name: string;
-  };
-  store: {
-    id: number;
-    name: string;
-  };
   imageUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  isActive: boolean;
+  quantity: number;
+  category: ProductCategory;
+  storeId: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface CreateProductDto {
@@ -24,7 +36,7 @@ export interface CreateProductDto {
   price: number;
   quantity: number;
   active?: boolean;
-  categoryId?: number;
+  category?: ProductCategory;
   storeId: number;
   imageUrl?: string;
 }
@@ -40,12 +52,12 @@ export interface UpdateProductDto {
 }
 
 export interface ProductFilter {
+  search?: string;
   category?: number;
   minPrice?: number;
   maxPrice?: number;
-  storeId?: number;
-  searchTerm?: string;
-  active?: boolean;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
 }
 
 export interface ProductSortOptions {
